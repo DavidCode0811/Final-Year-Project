@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
@@ -16,30 +17,40 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user, signUp } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [router, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role }),
+      const data = await signUp({
+        name,
+        email,
+        password,
+        role,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        router.push('/login');
+      if (data.requiresEmailVerification) {
+        setSuccessMessage(
+          'Account created. Check your email, verify your address, and you will be signed in with your Supabase account.'
+        );
       } else {
-        setError(data.error || 'Registration failed');
+        router.push('/dashboard');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(err.message || 'Unable to create your account.');
     } finally {
       setLoading(false);
     }
@@ -55,13 +66,18 @@ export default function RegisterPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Register to start taking exams</CardDescription>
+          <CardDescription>Register with Supabase Auth and verify your email to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
                 {error}
+              </div>
+            )}
+            {successMessage && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-700 text-sm">
+                {successMessage}
               </div>
             )}
             <div className="space-y-2">
@@ -96,6 +112,9 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <p className="text-xs text-slate-500">
+                Supabase Auth securely stores your password. Your profile row is created after verification.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>

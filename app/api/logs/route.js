@@ -1,28 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+
+import { getAuthenticatedAppUser, getHttpStatus } from '@/lib/server-auth';
 
 export async function POST(request) {
   try {
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        {
-          error:
-            'Server misconfiguration: add SUPABASE_SERVICE_ROLE_KEY to your environment.',
-        },
-        { status: 503 }
-      );
-    }
-
-    const db = supabaseAdmin;
-
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-
+    const { db, profile } = await getAuthenticatedAppUser(request);
     const { exam_id, event_type, metadata = {} } = await request.json();
 
     if (!exam_id || !event_type) {
@@ -36,11 +18,11 @@ export async function POST(request) {
       .from('activity_logs')
       .insert([
         {
-          user_id: decoded.userId,
+          user_id: profile.id,
           exam_id,
           event_type,
-          metadata
-        }
+          metadata,
+        },
       ])
       .select()
       .single();
@@ -60,8 +42,8 @@ export async function POST(request) {
   } catch (error) {
     console.error('Error logging activity:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: error.message || 'Internal server error' },
+      { status: getHttpStatus(error) }
     );
   }
 }

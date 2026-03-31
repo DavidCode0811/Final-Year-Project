@@ -9,7 +9,7 @@ import { CircleCheck as CheckCircle2, Circle as XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function ResultPage() {
-  const { user, token, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const examId = params.id;
@@ -31,12 +31,10 @@ export default function ResultPage() {
 
   const fetchResult = async () => {
     try {
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-
       const { data: response, error: responseError } = await supabase
         .from('responses')
         .select('*')
-        .eq('user_id', decoded.userId)
+        .eq('user_id', user.id)
         .eq('exam_id', examId)
         .maybeSingle();
 

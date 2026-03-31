@@ -13,6 +13,7 @@ export async function GET(request, { params }) {
       `)
       .eq('id', id)
       .eq('is_active', true)
+      .eq('is_published', true)
       .maybeSingle();
 
     if (examError || !exam) {

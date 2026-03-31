@@ -1,27 +1,12 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-admin';
+
+import { getAuthenticatedAppUser, getHttpStatus } from '@/lib/server-auth';
 
 export async function POST(request) {
   try {
-    if (!supabaseAdmin) {
-      return NextResponse.json(
-        {
-          error:
-            'Server misconfiguration: add SUPABASE_SERVICE_ROLE_KEY to your environment (Supabase Dashboard → Settings → API → service_role).',
-        },
-        { status: 503 }
-      );
-    }
-
-    const db = supabaseAdmin;
-
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+    const { db, profile } = await getAuthenticatedAppUser(request, {
+      requireRole: 'student',
+    });
 
     const { exam_id, answers, submission_type = 'manual' } = await request.json();
 
@@ -35,7 +20,7 @@ export async function POST(request) {
     const { data: existingResponse } = await db
       .from('responses')
       .select('id')
-      .eq('user_id', decoded.userId)
+      .eq('user_id', profile.id)
       .eq('exam_id', exam_id)
       .maybeSingle();
 
@@ -60,10 +45,11 @@ export async function POST(request) {
     }
 
     let score = 0;
-    questions.forEach(question => {
-      const qid = String(question.id);
-      if (answers[qid] === question.correct_answer) {
-        score++;
+    questions.forEach((question) => {
+      const questionId = String(question.id);
+
+      if (answers[questionId] === question.correct_answer) {
+        score += 1;
       }
     });
 
@@ -71,12 +57,12 @@ export async function POST(request) {
       .from('responses')
       .insert([
         {
-          user_id: decoded.userId,
+          user_id: profile.id,
           exam_id,
           answers,
           score,
-          submission_type
-        }
+          submission_type,
+        },
       ])
       .select()
       .single();
@@ -94,15 +80,15 @@ export async function POST(request) {
         message: 'Exam submitted successfully',
         score,
         total: questions.length,
-        response
+        response,
       },
       { status: 201 }
     );
   } catch (error) {
     console.error('Error submitting exam:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: error.message || 'Internal server error' },
+      { status: getHttpStatus(error) }
     );
   }
 }

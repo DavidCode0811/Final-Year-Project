@@ -34,21 +34,30 @@ const workspaceConfig = {
       {
         href: '/dashboard',
         label: 'Dashboard',
+        description: 'See available assessments and review your progress.',
         icon: LayoutDashboard,
         match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/result/'),
       },
     ],
   },
   lecturer: {
-    label: 'Admin',
+    label: 'Lecturer',
     icon: ShieldCheck,
     summary: 'Create exams, manage assessments, and monitor activity.',
     items: [
       {
         href: '/dashboard',
         label: 'Dashboard',
+        description: 'Review the exams you own and track publication status.',
         icon: LayoutDashboard,
-        match: (pathname) => pathname === '/dashboard',
+        match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/dashboard/exams/'),
+      },
+      {
+        href: '/create-exam',
+        label: 'Create Exam',
+        description: 'Draft a new assessment with schedule and publish settings.',
+        icon: FilePlus2,
+        match: (pathname) => pathname === '/create-exam',
       },
     ],
   },

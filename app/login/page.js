@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { user, signIn } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [router, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,22 +30,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        login(data.user, data.token);
-        router.push('/dashboard');
-      } else {
-        setError(data.error || 'Login failed');
-      }
+      await signIn({ email, password });
+      router.push('/dashboard');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(err.message || 'Unable to sign in. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -55,7 +49,7 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your exams</CardDescription>
+          <CardDescription>Sign in with your Supabase account to access your exams</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
