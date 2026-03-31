@@ -15,6 +15,8 @@ import {
 import { toast } from 'sonner';
 
 import { useAuth } from '@/components/AuthProvider';
+import { ExamTimer } from '@/components/ExamTimer';
+import { WarningModal } from '@/components/WarningModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -28,17 +30,20 @@ import {
   countAnsweredQuestions,
   createOrResumeAttempt,
   fetchAttemptAnswers,
+  fetchSubmittedStudentAttempt,
   fetchStudentAttempt,
   fetchStudentExam,
-  fetchStudentResponse,
   getExamAvailability,
   getStoredExamAnswers,
   getStoredQuestionIndex,
+  isAttemptSubmitted,
+  logExamActivity,
   saveAttemptAnswer,
   storeExamAnswers,
   storeQuestionIndex,
   submitStudentExam,
 } from '@/lib/student-exam';
+import { useExamIntegrityMonitor } from '@/lib/use-exam-integrity-monitor';
 
 function FullScreenLoader({ message }) {
   return (
@@ -114,6 +119,7 @@ export default function StudentExamPage() {
   });
 
   const saveTimeoutsRef = useRef({});
+  const submissionLockRef = useRef(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -146,16 +152,16 @@ export default function StudentExamPage() {
       try {
         const examData = await fetchStudentExam(examId);
         const availabilityState = getExamAvailability(examData);
-        const existingResponse = await fetchStudentResponse(examId, user.id);
+        const submittedAttempt = await fetchSubmittedStudentAttempt(examId, user.id);
 
-        if (existingResponse) {
+        if (submittedAttempt) {
           router.replace(`/result/${examId}`);
           return;
         }
 
         const existingAttempt = await fetchStudentAttempt(examId, user.id);
 
-        if (existingAttempt && existingAttempt.status !== 'in_progress') {
+        if (isAttemptSubmitted(existingAttempt)) {
           router.replace(`/result/${examId}`);
           return;
         }
@@ -177,6 +183,7 @@ export default function StudentExamPage() {
         setAvailability(availabilityState);
         setAttempt(existingAttempt);
         setAnswers(mergedAnswers);
+        setHasStarted(Boolean(existingAttempt && existingAttempt.status === 'in_progress'));
         setCurrentQuestionIndex(
           Math.min(
             getStoredQuestionIndex(examId),
@@ -266,6 +273,101 @@ export default function StudentExamPage() {
     }, 450);
   };
 
+  const logViolationEvent = async (eventType, metadata = {}) => {
+    if (!token || !examId) {
+      return;
+    }
+
+    await logExamActivity({
+      token,
+      examId,
+      eventType,
+      metadata: {
+        attemptId: attempt?.id,
+        questionIndex: currentQuestionIndex,
+        ...metadata,
+      },
+    });
+  };
+
+  const submitExamAttempt = async ({ mode = 'manual', reason = 'manual_submit' }) => {
+    if (!attempt?.id || !token) {
+      if (mode === 'manual') {
+        toast.error('Start the exam before submitting.');
+      }
+      return false;
+    }
+
+    if (submissionLockRef.current) {
+      return false;
+    }
+
+    submissionLockRef.current = true;
+    setSubmitting(true);
+
+    try {
+      await flushAnswerSaves(attempt.id, answers);
+      await submitStudentExam({
+        examId,
+        token,
+        answers,
+        attemptId: attempt.id,
+        submissionType: mode === 'auto' ? 'auto' : 'manual',
+      });
+
+      clearStoredExamAnswers(examId);
+      clearStoredQuestionIndex(examId);
+
+      toast.success(
+        mode === 'auto'
+          ? `Exam auto-submitted${reason ? `: ${reason.replace(/_/g, ' ')}` : '.'}`
+          : 'Exam submitted successfully.'
+      );
+
+      router.push(`/result/${examId}`);
+      return true;
+    } catch (error) {
+      const message = error.message || 'Failed to submit exam.';
+
+      if (message.toLowerCase().includes('already submitted')) {
+        clearStoredExamAnswers(examId);
+        clearStoredQuestionIndex(examId);
+        router.push(`/result/${examId}`);
+        return true;
+      }
+
+      submissionLockRef.current = false;
+      setSubmitting(false);
+      toast.error(
+        mode === 'auto'
+          ? message || 'Automatic submission failed. Please stay on this page.'
+          : message
+      );
+      return false;
+    }
+  };
+
+  const {
+    remainingSeconds,
+    violationCount,
+    tabSwitchCount,
+    inactivitySeconds,
+    warning,
+    dismissWarning,
+    isOffline,
+  } = useExamIntegrityMonitor({
+    examId,
+    attempt,
+    durationMinutes: exam?.duration,
+    enabled: Boolean(hasStarted && attempt?.id && token && exam?.duration && !submitting),
+    onAutoSubmit: async ({ reason }) =>
+      submitExamAttempt({
+        mode: 'auto',
+        reason,
+      }),
+    onLogViolation: logViolationEvent,
+  });
+
   const handleStartExam = async () => {
     if (!user || !examId || !availability.available) {
       return;
@@ -277,6 +379,7 @@ export default function StudentExamPage() {
       const attemptData = await createOrResumeAttempt(examId, user.id);
       setAttempt(attemptData);
       setHasStarted(true);
+      submissionLockRef.current = false;
 
       if (!hasExistingAttempt && Object.keys(answers).length > 0) {
         await flushAnswerSaves(attemptData.id, answers);
@@ -323,32 +426,10 @@ export default function StudentExamPage() {
   };
 
   const handleSubmitExam = async () => {
-    if (!attempt?.id || !token) {
-      toast.error('Start the exam before submitting.');
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      await flushAnswerSaves(attempt.id, answers);
-      await submitStudentExam({
-        examId,
-        token,
-        answers,
-        attemptId: attempt.id,
-        submissionType: 'manual',
-      });
-
-      clearStoredExamAnswers(examId);
-      clearStoredQuestionIndex(examId);
-      toast.success('Exam submitted successfully.');
-      router.push(`/result/${examId}`);
-    } catch (error) {
-      toast.error(error.message || 'Failed to submit exam.');
-    } finally {
-      setSubmitting(false);
-    }
+    await submitExamAttempt({
+      mode: 'manual',
+      reason: 'manual_submit',
+    });
   };
 
   if (loading || !user) {
@@ -486,6 +567,14 @@ export default function StudentExamPage() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+      <ExamTimer
+        remainingSeconds={remainingSeconds}
+        violationCount={violationCount}
+        tabSwitchCount={tabSwitchCount}
+        inactivitySeconds={inactivitySeconds}
+        isOffline={isOffline}
+      />
+
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:px-6">
         <aside className="lg:w-80 lg:flex-shrink-0">
           <Card className="border-slate-200 bg-white/92 shadow-sm lg:sticky lg:top-6">
@@ -680,6 +769,16 @@ export default function StudentExamPage() {
           )}
         </main>
       </div>
+
+      <WarningModal
+        isOpen={Boolean(warning)}
+        title={warning?.title || 'Exam warning'}
+        message={warning?.message || ''}
+        violationCount={warning?.violationCount ?? violationCount}
+        tone={warning?.tone || 'warning'}
+        blocking={warning?.blocking || false}
+        onDismiss={warning?.blocking ? undefined : dismissWarning}
+      />
     </div>
   );
 }

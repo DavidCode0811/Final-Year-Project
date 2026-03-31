@@ -8,7 +8,7 @@ export async function POST(request) {
       requireRole: 'student',
     });
 
-    const { exam_id, answers, submission_type = 'manual' } = await request.json();
+    const { exam_id, attempt_id, answers, submission_type = 'manual' } = await request.json();
 
     if (!exam_id || !answers) {
       return NextResponse.json(
@@ -17,14 +17,27 @@ export async function POST(request) {
       );
     }
 
-    const { data: existingResponse } = await db
-      .from('responses')
-      .select('id')
-      .eq('user_id', profile.id)
+    let attemptLookup = db
+      .from('exam_attempts')
+      .select('id, status')
       .eq('exam_id', exam_id)
-      .maybeSingle();
+      .eq('student_id', profile.id);
 
-    if (existingResponse) {
+    if (attempt_id) {
+      attemptLookup = attemptLookup.eq('id', attempt_id);
+    }
+
+    const { data: existingAttempt, error: attemptError } = await attemptLookup.maybeSingle();
+
+    if (attemptError) {
+      console.error('Submit exam attempt fetch:', attemptError);
+      return NextResponse.json(
+        { error: 'Failed to load your exam attempt' },
+        { status: 500 }
+      );
+    }
+
+    if (['submitted', 'auto_submitted'].includes(existingAttempt?.status)) {
       return NextResponse.json(
         { error: 'Exam already submitted' },
         { status: 400 }
@@ -53,22 +66,72 @@ export async function POST(request) {
       }
     });
 
-    const { data: response, error: responseError } = await db
-      .from('responses')
-      .insert([
-        {
-          user_id: profile.id,
+    let targetAttemptId = existingAttempt?.id;
+
+    if (!targetAttemptId) {
+      const { data: createdAttempt, error: createAttemptError } = await db
+        .from('exam_attempts')
+        .insert({
           exam_id,
-          answers,
-          score,
-          submission_type,
-        },
-      ])
+          student_id: profile.id,
+          status: 'in_progress',
+        })
+        .select('id')
+        .single();
+
+      if (createAttemptError) {
+        console.error('Submit exam attempt create:', createAttemptError);
+        return NextResponse.json(
+          { error: 'Failed to create your exam attempt' },
+          { status: 500 }
+        );
+      }
+
+      targetAttemptId = createdAttempt.id;
+    }
+
+    const answerRows = Object.entries(answers)
+      .filter(([, selectedAnswer]) => Boolean(selectedAnswer))
+      .map(([questionId, selectedAnswer]) => ({
+        attempt_id: targetAttemptId,
+        question_id: questionId,
+        selected_answer: selectedAnswer,
+        saved_at: new Date().toISOString(),
+      }));
+
+    if (answerRows.length > 0) {
+      const { error: answerUpsertError } = await db
+        .from('answers')
+        .upsert(answerRows, {
+          onConflict: 'attempt_id,question_id',
+        });
+
+      if (answerUpsertError) {
+        console.error('Submit exam answer sync:', answerUpsertError);
+        return NextResponse.json(
+          { error: 'Failed to save your final answers' },
+          { status: 500 }
+        );
+      }
+    }
+
+    const nextStatus = submission_type === 'auto' ? 'auto_submitted' : 'submitted';
+
+    const { data: attempt, error: updateAttemptError } = await db
+      .from('exam_attempts')
+      .update({
+        status: nextStatus,
+        submitted_at: new Date().toISOString(),
+        last_saved_at: new Date().toISOString(),
+      })
+      .eq('id', targetAttemptId)
+      .eq('student_id', profile.id)
+      .eq('exam_id', exam_id)
       .select()
       .single();
 
-    if (responseError) {
-      console.error('Submit exam insert:', responseError);
+    if (updateAttemptError) {
+      console.error('Submit exam attempt update:', updateAttemptError);
       return NextResponse.json(
         { error: 'Failed to submit exam' },
         { status: 500 }
@@ -80,7 +143,7 @@ export async function POST(request) {
         message: 'Exam submitted successfully',
         score,
         total: questions.length,
-        response,
+        attempt,
       },
       { status: 201 }
     );

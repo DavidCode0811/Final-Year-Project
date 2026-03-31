@@ -6,7 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import PortalShell from '@/components/PortalShell';
 import { CircleCheck as CheckCircle2, Circle as XCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { fetchStudentResult } from '@/lib/student-exam';
 
 export default function ResultPage() {
   const { user, loading } = useAuth();
@@ -31,32 +31,15 @@ export default function ResultPage() {
 
   const fetchResult = async () => {
     try {
-      const { data: response, error: responseError } = await supabase
-        .from('responses')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('exam_id', examId)
-        .maybeSingle();
+      const resultData = await fetchStudentResult(examId, user.id);
 
-      if (responseError || !response) {
+      if (!resultData) {
         router.push('/dashboard');
         return;
       }
 
-      const { data: examData, error: examError } = await supabase
-        .from('exams')
-        .select(`
-          *,
-          questions(id)
-        `)
-        .eq('id', examId)
-        .maybeSingle();
-
-      if (!examError && examData) {
-        setExam(examData);
-      }
-
-      setResult(response);
+      setExam(resultData.exam);
+      setResult(resultData);
     } catch (error) {
       console.error('Failed to fetch result:', error);
       router.push('/dashboard');
@@ -76,7 +59,7 @@ export default function ResultPage() {
     );
   }
 
-  const totalQuestions = exam?.questions?.length || 0;
+  const totalQuestions = result?.totalQuestions || exam?.questions?.length || 0;
   const percentage = totalQuestions > 0 ? ((result.score / totalQuestions) * 100).toFixed(1) : 0;
   const passed = percentage >= 50;
 
@@ -128,19 +111,19 @@ export default function ResultPage() {
               <p>
                 Submission Type:{' '}
                 <span className="font-medium capitalize">
-                  {result.submission_type}
+                  {result.submissionType}
                 </span>
               </p>
               <p>
                 Submitted At:{' '}
                 <span className="font-medium">
-                  {new Date(result.submitted_at).toLocaleString()}
+                  {new Date(result.attempt.submitted_at).toLocaleString()}
                 </span>
               </p>
             </div>
           </div>
 
-          {result.submission_type === 'auto' ? (
+          {result.submissionType === 'auto' ? (
             <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
               <p className="text-sm text-yellow-800">
                 This exam was automatically submitted due to a violation of exam rules.
