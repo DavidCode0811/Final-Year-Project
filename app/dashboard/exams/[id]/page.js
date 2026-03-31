@@ -134,6 +134,9 @@ export default function LecturerExamDetailsPage() {
           <Button asChild variant="outline" className="border-slate-300 bg-white/80">
             <Link href={`/dashboard/exams/${examId}/questions`}>Manage Questions</Link>
           </Button>
+          <Button asChild variant="outline" className="border-slate-300 bg-white/80">
+            <Link href={`/dashboard/exams/${examId}/results`}>View Results</Link>
+          </Button>
           <Button
             type="button"
             variant={exam?.is_published ? 'outline' : 'default'}
@@ -267,6 +270,9 @@ export default function LecturerExamDetailsPage() {
 
               <Button asChild className="w-full bg-slate-950 text-white hover:bg-slate-800">
                 <Link href={`/dashboard/exams/${examId}/questions`}>Manage Questions</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full border-slate-300 bg-white">
+                <Link href={`/dashboard/exams/${examId}/results`}>View Results</Link>
               </Button>
 
               <Button
