@@ -60,7 +60,8 @@ export default function ResultPage() {
   }
 
   const totalQuestions = result?.totalQuestions || exam?.questions?.length || 0;
-  const percentage = totalQuestions > 0 ? ((result.score / totalQuestions) * 100).toFixed(1) : 0;
+  const totalMarks = result?.totalMarks || 0;
+  const percentage = totalMarks > 0 ? ((result.score / totalMarks) * 100).toFixed(1) : 0;
   const passed = percentage >= 50;
 
   return (
@@ -88,20 +89,20 @@ export default function ResultPage() {
               {percentage}%
             </div>
             <p className="text-gray-600">
-              {result.score} out of {totalQuestions} questions correct
+              {result.score} out of {totalMarks} marks earned
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
               <div className="text-2xl font-bold text-blue-700">{result.score}</div>
-              <div className="text-sm text-blue-600">Correct</div>
+              <div className="text-sm text-blue-600">Marks Earned</div>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center">
               <div className="text-2xl font-bold text-red-700">
-                {totalQuestions - result.score}
+                {result.correctCount}
               </div>
-              <div className="text-sm text-red-600">Incorrect</div>
+              <div className="text-sm text-red-600">Questions Correct</div>
             </div>
           </div>
 
@@ -117,7 +118,13 @@ export default function ResultPage() {
               <p>
                 Submitted At:{' '}
                 <span className="font-medium">
-                  {new Date(result.attempt.submitted_at).toLocaleString()}
+                  {new Date(result.attempt.end_time || result.attempt.submitted_at).toLocaleString()}
+                </span>
+              </p>
+              <p>
+                Questions Correct:{' '}
+                <span className="font-medium">
+                  {result.correctCount} / {totalQuestions}
                 </span>
               </p>
             </div>

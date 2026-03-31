@@ -2,6 +2,37 @@ import { NextResponse } from 'next/server';
 
 import { getAuthenticatedAppUser, getHttpStatus } from '@/lib/server-auth';
 
+function buildScorePayload(scoredAnswers, examId, attemptId) {
+  const relevantAnswers = (scoredAnswers || []).filter((answer) => {
+    return String(answer?.question?.exam_id || '') === String(examId);
+  });
+
+  const answerUpdates = relevantAnswers.map((answer) => {
+    const isCorrect = answer.selected_answer === answer.question?.correct_answer;
+
+    return {
+      id: answer.id,
+      attempt_id: attemptId,
+      question_id: answer.question_id,
+      selected_answer: answer.selected_answer,
+      is_correct: isCorrect,
+    };
+  });
+
+  const score = relevantAnswers.reduce((total, answer) => {
+    const isCorrect = answer.selected_answer === answer.question?.correct_answer;
+    return isCorrect ? total + Number(answer.question?.marks || 0) : total;
+  }, 0);
+
+  const correctCount = answerUpdates.filter((answer) => answer.is_correct).length;
+
+  return {
+    answerUpdates,
+    score,
+    correctCount,
+  };
+}
+
 export async function POST(request) {
   try {
     const { db, profile } = await getAuthenticatedAppUser(request, {
@@ -46,7 +77,7 @@ export async function POST(request) {
 
     const { data: questions, error: questionsError } = await db
       .from('questions')
-      .select('id, correct_answer')
+      .select('id, marks')
       .eq('exam_id', exam_id);
 
     if (questionsError) {
@@ -57,14 +88,11 @@ export async function POST(request) {
       );
     }
 
-    let score = 0;
-    questions.forEach((question) => {
-      const questionId = String(question.id);
-
-      if (answers[questionId] === question.correct_answer) {
-        score += 1;
-      }
-    });
+    const validQuestionIds = new Set((questions || []).map((question) => String(question.id)));
+    const totalMarks = (questions || []).reduce(
+      (total, question) => total + Number(question.marks || 0),
+      0
+    );
 
     let targetAttemptId = existingAttempt?.id;
 
@@ -91,7 +119,9 @@ export async function POST(request) {
     }
 
     const answerRows = Object.entries(answers)
-      .filter(([, selectedAnswer]) => Boolean(selectedAnswer))
+      .filter(([questionId, selectedAnswer]) => {
+        return Boolean(selectedAnswer) && validQuestionIds.has(String(questionId));
+      })
       .map(([questionId, selectedAnswer]) => ({
         attempt_id: targetAttemptId,
         question_id: questionId,
@@ -115,14 +145,63 @@ export async function POST(request) {
       }
     }
 
+    const { data: scoredAnswers, error: scoredAnswersError } = await db
+      .from('answers')
+      .select(`
+        id,
+        attempt_id,
+        question_id,
+        selected_answer,
+        question:questions!answers_question_id_fkey (
+          id,
+          exam_id,
+          correct_answer,
+          marks
+        )
+      `)
+      .eq('attempt_id', targetAttemptId);
+
+    if (scoredAnswersError) {
+      console.error('Submit exam scoring fetch:', scoredAnswersError);
+      return NextResponse.json(
+        { error: 'Failed to score your exam' },
+        { status: 500 }
+      );
+    }
+
+    const { answerUpdates, score, correctCount } = buildScorePayload(
+      scoredAnswers,
+      exam_id,
+      targetAttemptId
+    );
+
+    if (answerUpdates.length > 0) {
+      const { error: answerScoreError } = await db
+        .from('answers')
+        .upsert(answerUpdates, {
+          onConflict: 'id',
+        });
+
+      if (answerScoreError) {
+        console.error('Submit exam answer scoring update:', answerScoreError);
+        return NextResponse.json(
+          { error: 'Failed to persist scored answers' },
+          { status: 500 }
+        );
+      }
+    }
+
     const nextStatus = submission_type === 'auto' ? 'auto_submitted' : 'submitted';
+    const submittedAt = new Date().toISOString();
 
     const { data: attempt, error: updateAttemptError } = await db
       .from('exam_attempts')
       .update({
         status: nextStatus,
-        submitted_at: new Date().toISOString(),
-        last_saved_at: new Date().toISOString(),
+        submitted_at: submittedAt,
+        end_time: submittedAt,
+        last_saved_at: submittedAt,
+        score,
       })
       .eq('id', targetAttemptId)
       .eq('student_id', profile.id)
@@ -142,7 +221,9 @@ export async function POST(request) {
       {
         message: 'Exam submitted successfully',
         score,
-        total: questions.length,
+        correctCount,
+        totalQuestions: questions.length,
+        totalMarks,
         attempt,
       },
       { status: 201 }
