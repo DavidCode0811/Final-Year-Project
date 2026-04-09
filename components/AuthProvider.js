@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseStorageKey } from '@/lib/supabase';
 
 const AuthContext = createContext({});
 
@@ -20,6 +20,10 @@ export function AuthProvider({ children }) {
 
     window.localStorage.removeItem('token');
     window.localStorage.removeItem('user');
+
+    if (supabaseStorageKey) {
+      window.localStorage.removeItem(supabaseStorageKey);
+    }
   };
 
   const syncProfile = async (accessToken) => {
