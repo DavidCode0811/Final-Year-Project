@@ -81,7 +81,6 @@ export default function ResultPage() {
   return (
     <PortalShell
       title="Exam Result"
-      description="Your student sidebar stays available here so you can move back to the dashboard at any time."
       contentClassName="mx-auto max-w-5xl"
     >
       <div className="space-y-6">
