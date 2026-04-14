@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowDownUp, BarChart3, Search } from 'lucide-react';
+import {
+  ArrowDownUp,
+  BarChart3,
+  Clock3,
+  Search,
+  Trophy,
+  Users2,
+} from 'lucide-react';
 
 import { useAuth } from '@/components/AuthProvider';
 import PortalShell from '@/components/PortalShell';
@@ -52,6 +59,20 @@ function formatDuration(seconds) {
   const remainder = safeSeconds % 60;
 
   return `${minutes}m ${String(remainder).padStart(2, '0')}s`;
+}
+
+function getScoreTone(score, totalPossibleScore) {
+  const ratio = totalPossibleScore > 0 ? Number(score || 0) / totalPossibleScore : 0;
+
+  if (ratio >= 0.75) {
+    return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+  }
+
+  if (ratio >= 0.5) {
+    return 'text-amber-700 bg-amber-50 border-amber-200';
+  }
+
+  return 'text-rose-700 bg-rose-50 border-rose-200';
 }
 
 export default function LecturerExamResultsPage() {
@@ -146,6 +167,7 @@ export default function LecturerExamResultsPage() {
     filteredRows.length > 0
       ? Math.max(...filteredRows.map((row) => Number(row.score || 0)))
       : 0;
+  const totalPossibleScore = Number(exam?.totalPossibleScore || 0);
 
   if (loading || !user) {
     return <FullScreenLoader message="Checking your workspace..." />;
@@ -182,36 +204,71 @@ export default function LecturerExamResultsPage() {
       ) : (
         <div className="space-y-6">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="border-slate-200 bg-white/90 shadow-sm">
+            <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_22px_44px_-32px_rgba(15,23,42,0.4)]">
               <CardContent className="p-5">
-                <p className="text-sm text-slate-500">Submissions</p>
-                <p className="mt-1 text-2xl font-bold text-slate-950">{filteredRows.length}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-slate-500">Submissions</p>
+                    <p className="mt-1 text-3xl font-bold text-slate-950">{filteredRows.length}</p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Students graded
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-950 p-3 text-white">
+                    <Users2 className="h-5 w-5" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card className="border-slate-200 bg-white/90 shadow-sm">
+            <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_22px_44px_-32px_rgba(15,23,42,0.4)]">
               <CardContent className="p-5">
-                <p className="text-sm text-slate-500">Average Score</p>
-                <p className="mt-1 text-2xl font-bold text-slate-950">
-                  {averageScore} / {exam?.totalPossibleScore || 0}
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-slate-500">Average Score</p>
+                    <p className="mt-1 text-3xl font-bold text-slate-950">
+                      {averageScore} / {exam?.totalPossibleScore || 0}
+                    </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Cohort mean
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-indigo-600 p-3 text-white">
+                    <BarChart3 className="h-5 w-5" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
-            <Card className="border-slate-200 bg-white/90 shadow-sm">
+            <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_22px_44px_-32px_rgba(15,23,42,0.4)]">
               <CardContent className="p-5">
-                <p className="text-sm text-slate-500">Top Score</p>
-                <p className="mt-1 text-2xl font-bold text-slate-950">
-                  {topScore} / {exam?.totalPossibleScore || 0}
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-slate-500">Top Score</p>
+                    <p className="mt-1 text-3xl font-bold text-slate-950">
+                      {topScore} / {exam?.totalPossibleScore || 0}
+                    </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Best attempt
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-amber-500 p-3 text-white">
+                    <Trophy className="h-5 w-5" />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          <Card className="border-slate-200 bg-white/90 shadow-sm">
-            <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BarChart3 className="h-5 w-5 text-slate-600" />
-                Lecturer Analytics
-              </CardTitle>
+          <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.45)]">
+            <CardHeader className="flex flex-col gap-4 border-b border-slate-200/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.03),rgba(59,130,246,0.06),rgba(99,102,241,0.06))] md:flex-row md:items-center md:justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <BarChart3 className="h-5 w-5 text-slate-600" />
+                  Lecturer Analytics
+                </CardTitle>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Search submissions, compare scores, and drill into question-level marking.
+                </p>
+              </div>
               <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
                 <div className="relative min-w-[240px]">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -219,13 +276,13 @@ export default function LecturerExamResultsPage() {
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Search student name"
-                    className="pl-9"
+                    className="h-11 rounded-xl border-slate-300 bg-white/80 pl-9 shadow-sm"
                   />
                 </div>
                 <Button
                   type="button"
                   variant="outline"
-                  className="border-slate-300 bg-white"
+                  className="h-11 rounded-xl border-slate-300 bg-white"
                   onClick={() => setScoreSort((current) => (current === 'desc' ? 'asc' : 'desc'))}
                 >
                   <ArrowDownUp className="mr-2 h-4 w-4" />
@@ -233,112 +290,189 @@ export default function LecturerExamResultsPage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student Name</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Submission Type</TableHead>
-                    <TableHead>Time Taken</TableHead>
-                    <TableHead>Submitted At</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRows.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-slate-500">
-                        No submissions found for this filter.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredRows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        className="cursor-pointer"
-                        data-state={selectedRow?.id === row.id ? 'selected' : undefined}
-                        onClick={() => setSelectedAttemptId(row.id)}
-                      >
-                        <TableCell>
-                          <div className="font-medium text-slate-900">{row.studentName}</div>
-                          <div className="text-xs text-slate-500">{row.studentEmail}</div>
-                        </TableCell>
-                        <TableCell>
-                          {row.score} / {exam?.totalPossibleScore || 0}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              row.submissionType === 'auto'
-                                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                                : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                            }
-                          >
-                            {row.submissionType}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{formatDuration(row.timeTakenSeconds)}</TableCell>
-                        <TableCell>{formatDateTime(row.endTime || row.submittedAt)}</TableCell>
+            <CardContent className="p-0">
+              <div className="grid gap-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+                <div className="border-b border-slate-200/70 lg:border-b-0 lg:border-r">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student Name</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Submission Type</TableHead>
+                        <TableHead>Time Taken</TableHead>
+                        <TableHead>Submitted At</TableHead>
                       </TableRow>
-                    ))
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="py-12 text-center text-slate-500">
+                            No submissions found for this filter.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredRows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            className="cursor-pointer border-slate-200/80"
+                            data-state={selectedRow?.id === row.id ? 'selected' : undefined}
+                            onClick={() => setSelectedAttemptId(row.id)}
+                          >
+                            <TableCell>
+                              <div className="font-medium text-slate-900">{row.studentName}</div>
+                              <div className="text-xs text-slate-500">{row.studentEmail}</div>
+                            </TableCell>
+                            <TableCell>
+                              <span
+                                className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getScoreTone(
+                                  row.score,
+                                  totalPossibleScore
+                                )}`}
+                              >
+                                {row.score} / {exam?.totalPossibleScore || 0}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  row.submissionType === 'auto'
+                                    ? 'border-amber-200 bg-amber-50 text-amber-700'
+                                    : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                }
+                              >
+                                {row.submissionType}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{formatDuration(row.timeTakenSeconds)}</TableCell>
+                            <TableCell>{formatDateTime(row.endTime || row.submittedAt)}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="bg-slate-50/70">
+                  {selectedRow ? (
+                    <div className="space-y-6 p-6">
+                      <div className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                              Selected Attempt
+                            </p>
+                            <h3 className="mt-3 text-xl font-semibold text-slate-950">
+                              {selectedRow.studentName}
+                            </h3>
+                            <p className="mt-1 text-sm text-slate-500">{selectedRow.studentEmail}</p>
+                          </div>
+                          <div
+                            className={`rounded-2xl border px-3 py-2 text-sm font-semibold ${getScoreTone(
+                              selectedRow.score,
+                              totalPossibleScore
+                            )}`}
+                          >
+                            {selectedRow.score} / {exam?.totalPossibleScore || 0}
+                          </div>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-2xl bg-slate-50 p-4">
+                            <div className="flex items-center gap-2 text-slate-500">
+                              <Clock3 className="h-4 w-4" />
+                              <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+                                Time Taken
+                              </span>
+                            </div>
+                            <p className="mt-3 text-sm font-semibold text-slate-900">
+                              {formatDuration(selectedRow.timeTakenSeconds)}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                              Submitted
+                            </p>
+                            <p className="mt-3 text-sm font-semibold leading-6 text-slate-900">
+                              {formatDateTime(selectedRow.endTime || selectedRow.submittedAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-sm">
+                        <p className="text-sm font-semibold text-slate-950">Question Breakdown</p>
+                        <div className="mt-4 space-y-3">
+                          {(selectedRow.questionResults || []).length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+                              No per-question data is available for this submission yet.
+                            </div>
+                          ) : (
+                            (selectedRow.questionResults || []).map((question) => (
+                              <div
+                                key={question.questionId}
+                                className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4"
+                              >
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div>
+                                    <p className="font-medium text-slate-900">
+                                      Q{question.index}. {question.questionText}
+                                    </p>
+                                    <p className="mt-1 text-xs text-slate-500">
+                                      {question.marks} mark(s)
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      question.isCorrect
+                                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                        : 'border-rose-200 bg-rose-50 text-rose-700'
+                                    }
+                                  >
+                                    {question.isCorrect ? 'Correct' : 'Incorrect'}
+                                  </Badge>
+                                </div>
+                                <div className="mt-4 grid gap-3">
+                                  <div className="rounded-2xl bg-white p-3">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                      Student Answer
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                                      {question.selectedAnswer || '-'}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-2xl bg-white p-3">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                      Correct Answer
+                                    </p>
+                                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                                      {question.correctAnswer}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-full min-h-[320px] items-center justify-center p-6">
+                      <div className="max-w-sm rounded-[28px] border border-dashed border-slate-300 bg-white/80 p-8 text-center shadow-sm">
+                        <p className="text-sm font-semibold text-slate-950">No attempt selected</p>
+                        <p className="mt-2 text-sm leading-6 text-slate-500">
+                          Choose a student submission from the table to inspect its full question breakdown.
+                        </p>
+                      </div>
+                    </div>
                   )}
-                </TableBody>
-              </Table>
+                </div>
+              </div>
             </CardContent>
           </Card>
-
-          {selectedRow ? (
-            <Card className="border-slate-200 bg-white/90 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  Detail View: {selectedRow.studentName} ({selectedRow.score} /{' '}
-                  {exam?.totalPossibleScore || 0})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Question</TableHead>
-                      <TableHead>Student Answer</TableHead>
-                      <TableHead>Correct Answer</TableHead>
-                      <TableHead>Result</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(selectedRow.questionResults || []).map((question) => (
-                      <TableRow key={question.questionId}>
-                        <TableCell>
-                          <p className="font-medium text-slate-900">
-                            Q{question.index}. {question.questionText}
-                          </p>
-                          <p className="text-xs text-slate-500">{question.marks} mark(s)</p>
-                        </TableCell>
-                        <TableCell>{question.selectedAnswer || '-'}</TableCell>
-                        <TableCell>{question.correctAnswer}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              question.isCorrect
-                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                : 'border-rose-200 bg-rose-50 text-rose-700'
-                            }
-                          >
-                            {question.isCorrect ? 'Correct' : 'Incorrect'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          ) : null}
         </div>
       )}
     </PortalShell>
   );
 }
-

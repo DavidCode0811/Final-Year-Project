@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   FilePlus2,
   GraduationCap,
   LayoutDashboard,
@@ -29,12 +31,10 @@ const workspaceConfig = {
   student: {
     label: 'Student',
     icon: GraduationCap,
-    summary: 'Browse available exams and review your latest results.',
     items: [
       {
         href: '/dashboard',
         label: 'Dashboard',
-        description: 'See available assessments and review your progress.',
         icon: LayoutDashboard,
         match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/result/'),
       },
@@ -43,19 +43,16 @@ const workspaceConfig = {
   lecturer: {
     label: 'Lecturer',
     icon: ShieldCheck,
-    summary: 'Create exams, manage assessments, and monitor activity.',
     items: [
       {
         href: '/dashboard',
         label: 'Dashboard',
-        description: 'Review the exams you own and track publication status.',
         icon: LayoutDashboard,
         match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/dashboard/exams/'),
       },
       {
         href: '/create-exam',
         label: 'Create Exam',
-        description: 'Draft a new assessment with schedule and publish settings.',
         icon: FilePlus2,
         match: (pathname) => pathname === '/create-exam',
       },
@@ -63,17 +60,44 @@ const workspaceConfig = {
   },
 };
 
-function WorkspaceSidebar({ user, pathname, onNavigate, onLogout }) {
+function WorkspaceSidebar({
+  user,
+  pathname,
+  onNavigate,
+  onLogout,
+  collapsed = false,
+  onToggleCollapse,
+  showCollapseToggle = false,
+}) {
   const config = workspaceConfig[user?.role] || workspaceConfig.student;
-  const RoleIcon = config.icon;
 
   return (
-    <div className="flex h-full flex-col bg-slate-950 text-white">
+    <div className="flex h-screen flex-col overflow-y-auto bg-slate-950 text-white">
+      <div className="flex items-center justify-between px-4 py-5">
+        <div className={cn('min-w-0', collapsed && 'hidden')}>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+            Navigation
+          </p>
+          <p className="mt-2 text-sm text-slate-400">{config.summary}</p>
+        </div>
 
-      <div className="flex-1 px-4 py-6">
-        <p className="px-3 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
-          Navigation
-        </p>
+        {showCollapseToggle ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onToggleCollapse}
+            className="h-10 w-10 rounded-2xl border border-slate-800 bg-slate-900/70 text-slate-300 hover:bg-slate-800 hover:text-white"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        ) : null}
+      </div>
+
+      <div className={cn('flex-1 px-4 pb-6', collapsed && 'px-3')}>
+        
         <nav className="mt-4 space-y-2">
           {config.items.map((item) => {
             const ItemIcon = item.icon;
@@ -85,14 +109,21 @@ function WorkspaceSidebar({ user, pathname, onNavigate, onLogout }) {
                 href={item.href}
                 onClick={onNavigate}
                 aria-current={isActive ? 'page' : undefined}
+                title={collapsed ? item.label : undefined}
                 className={cn(
-                  'block rounded-2xl border px-4 py-4 transition-all',
+                  'block rounded-2xl border transition-all',
+                  collapsed ? 'px-3 py-3' : 'px-4 py-4',
                   isActive
                     ? 'border-white/20 bg-white text-slate-950 shadow-lg'
                     : 'border-slate-800 bg-slate-900/60 text-slate-200 hover:border-slate-700 hover:bg-slate-900'
                 )}
               >
-                <div className="flex items-start gap-3">
+                <div
+                  className={cn(
+                    'flex gap-3',
+                    collapsed ? 'items-center justify-center' : 'items-start'
+                  )}
+                >
                   <div
                     className={cn(
                       'rounded-xl p-2',
@@ -101,7 +132,7 @@ function WorkspaceSidebar({ user, pathname, onNavigate, onLogout }) {
                   >
                     <ItemIcon className="h-4 w-4" />
                   </div>
-                  <div>
+                  <div className={cn(collapsed && 'hidden')}>
                     <p className="text-sm font-semibold">{item.label}</p>
                     <p
                       className={cn(
@@ -119,19 +150,39 @@ function WorkspaceSidebar({ user, pathname, onNavigate, onLogout }) {
         </nav>
       </div>
 
-      <div className="border-t border-slate-800 px-6 py-6">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-          <p className="text-sm font-semibold text-white">{user?.name}</p>
-          <p className="mt-1 text-sm text-slate-400">{user?.email}</p>
+      <div className={cn('border-t border-slate-800 px-6 py-6', collapsed && 'px-3')}>
+        <div
+          className={cn(
+            'rounded-2xl border border-slate-800 bg-slate-900/60 p-4',
+            collapsed && 'flex justify-center p-3'
+          )}
+        >
+          <div className={cn(collapsed && 'hidden')}>
+            <p className="text-sm font-semibold text-white">{user?.name}</p>
+            <p className="mt-1 text-sm text-slate-400">{user?.email}</p>
+          </div>
+          <div
+            className={cn(
+              'hidden h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white',
+              collapsed && 'flex'
+            )}
+            aria-hidden={!collapsed}
+          >
+            {(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+          </div>
         </div>
 
         <Button
           variant="secondary"
-          className="mt-4 w-full justify-start bg-white text-slate-950 hover:bg-slate-200"
+          className={cn(
+            'mt-4 bg-white text-slate-950 hover:bg-slate-200',
+            collapsed ? 'w-full justify-center px-0' : 'w-full justify-start'
+          )}
           onClick={onLogout}
+          title={collapsed ? 'Logout' : undefined}
         >
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          <LogOut className={cn('h-4 w-4', !collapsed && 'mr-2')} />
+          <span className={cn(collapsed && 'sr-only')}>Logout</span>
         </Button>
       </div>
     </div>
@@ -148,7 +199,31 @@ export default function PortalShell({
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const config = workspaceConfig[user?.role] || workspaceConfig.student;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const stored = window.localStorage.getItem('portal-sidebar-collapsed');
+    if (stored === 'true') {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
+  const handleToggleCollapse = () => {
+    setSidebarCollapsed((current) => {
+      const next = !current;
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('portal-sidebar-collapsed', String(next));
+      }
+
+      return next;
+    });
+  };
 
   const handleNavigate = () => {
     setMobileOpen(false);
@@ -162,12 +237,20 @@ export default function PortalShell({
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.18),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
       <div className="flex min-h-screen">
-        <aside className="hidden w-80 border-r border-slate-200 bg-slate-950 md:block">
+        <aside
+          className={cn(
+            'sticky top-0 hidden h-screen border-r border-slate-200 bg-slate-950 transition-[width] duration-300 md:block',
+            sidebarCollapsed ? 'w-24' : 'w-80'
+          )}
+        >
           <WorkspaceSidebar
             user={user}
             pathname={pathname}
             onNavigate={handleNavigate}
             onLogout={handleLogout}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={handleToggleCollapse}
+            showCollapseToggle
           />
         </aside>
 
