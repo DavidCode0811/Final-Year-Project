@@ -12,7 +12,6 @@ import {
   Clock3,
   FileText,
   LineChart,
-  Plus,
   RadioTower,
 } from 'lucide-react';
 
@@ -127,14 +126,6 @@ function LecturerDashboardView({ user }) {
     <PortalShell
       title="Lecturer Dashboard"
       description="Review the exams you own, publish them when ready, and create new assessment windows."
-      actions={
-        <Button asChild>
-          <Link href="/create-exam">
-            <Plus className="mr-2 h-4 w-4" />
-            Create New Exam
-          </Link>
-        </Button>
-      }
       contentClassName="mx-auto max-w-7xl"
     >
       <div className="grid gap-4 md:grid-cols-3">
@@ -143,16 +134,13 @@ function LecturerDashboardView({ user }) {
         <SummaryCard icon={FileText} label="Drafts" value={draftCount} tone="amber" />
       </div>
 
-      <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mt-8">
         <div>
           <h2 className="text-xl font-semibold text-foreground">Your Exams</h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Each card below shows the exam schedule, duration, and publication state.
           </p>
         </div>
-        <Button asChild variant="outline">
-          <Link href="/create-exam">Create New Exam</Link>
-        </Button>
       </div>
 
       {loading ? (
@@ -186,9 +174,6 @@ function LecturerDashboardView({ user }) {
             <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
               Create your first exam to start building out your assessment schedule.
             </p>
-            <Button asChild className="mt-6">
-              <Link href="/create-exam">Create New Exam</Link>
-            </Button>
           </CardContent>
         </Card>
       ) : (

@@ -64,9 +64,9 @@ export default function CreateExamPage() {
     <PortalShell
       title="Create New Exam"
       description="Set up a new assessment with a clear schedule, duration, and publication state."
-      contentClassName="mx-auto max-w-6xl"
+      contentClassName="mx-auto max-w-7xl"
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">
         <LecturerExamForm
           onSubmit={handleCreateExam}
           submitting={submitting}
@@ -74,9 +74,9 @@ export default function CreateExamPage() {
           submitLabel="Create New Exam"
         />
 
-        <Card className="border-slate-200 bg-white/85 shadow-sm">
-          <CardContent className="space-y-5 p-6">
-            <div className="rounded-2xl bg-slate-950 p-4 text-white">
+        <Card className="h-fit overflow-hidden border-border/80 bg-card/92 shadow-sm 2xl:sticky 2xl:top-28">
+          <CardContent className="space-y-5 p-5 sm:p-6">
+            <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-5 text-white">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
                 Lecturer Flow
               </p>
@@ -87,31 +87,37 @@ export default function CreateExamPage() {
               </p>
             </div>
 
-            <div className="space-y-4 text-sm text-slate-600">
-              <div className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <FileText className="mt-0.5 h-4 w-4 text-slate-700" />
-                <div>
-                  <p className="font-medium text-slate-950">Description</p>
+            <div className="grid gap-4 text-sm text-muted-foreground sm:grid-cols-3 2xl:grid-cols-1">
+              <div className="flex min-w-0 gap-3 rounded-3xl border border-border/80 bg-muted/35 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background shadow-sm">
+                  <FileText className="h-4 w-4 text-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Description</p>
                   <p className="mt-1 leading-6">
                     Add the student-facing overview and key instructions.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <Clock3 className="mt-0.5 h-4 w-4 text-slate-700" />
-                <div>
-                  <p className="font-medium text-slate-950">Duration</p>
+              <div className="flex min-w-0 gap-3 rounded-3xl border border-border/80 bg-muted/35 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background shadow-sm">
+                  <Clock3 className="h-4 w-4 text-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Duration</p>
                   <p className="mt-1 leading-6">
                     Exams must be greater than zero minutes before they can be saved.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <CalendarDays className="mt-0.5 h-4 w-4 text-slate-700" />
-                <div>
-                  <p className="font-medium text-slate-950">Scheduling</p>
+              <div className="flex min-w-0 gap-3 rounded-3xl border border-border/80 bg-muted/35 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background shadow-sm">
+                  <CalendarDays className="h-4 w-4 text-foreground" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground">Scheduling</p>
                   <p className="mt-1 leading-6">
                     Start and end times are validated so the exam window always makes sense.
                   </p>

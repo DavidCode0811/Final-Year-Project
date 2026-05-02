@@ -18,14 +18,6 @@ import {
 import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -221,6 +213,7 @@ export default function PortalShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const config = workspaceConfig[user?.role] || workspaceConfig.student;
+  const showThemeToggle = pathname === '/dashboard';
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -317,24 +310,7 @@ export default function PortalShell({
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <ThemeToggle />
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button type="button" variant="outline" size="icon" aria-label="Open account menu">
-                      <UserCog className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="truncate">
-                      {user?.name || user?.email || 'Account'}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/dashboard/profile">Profile & Settings</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {showThemeToggle ? <ThemeToggle /> : null}
                 {actions}
               </div>
             </div>

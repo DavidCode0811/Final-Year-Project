@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { CalendarDays, Clock3, FileText, Loader2, RadioTower } from 'lucide-react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,31 @@ function FieldError({ message }) {
     return null;
   }
 
-  return <p className="text-sm text-rose-600">{message}</p>;
+  return <p className="text-sm text-destructive">{message}</p>;
+}
+
+function SetupHint({ icon: Icon, title, description }) {
+  return (
+    <div className="flex min-w-0 gap-3 rounded-2xl border border-border/80 bg-muted/35 p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background text-foreground shadow-sm">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+function FormField({ id, label, error, children, className = '' }) {
+  return (
+    <div className={`min-w-0 space-y-2 ${className}`.trim()}>
+      <Label htmlFor={id}>{label}</Label>
+      {children}
+      <FieldError message={error} />
+    </div>
+  );
 }
 
 export default function LecturerExamForm({
@@ -73,116 +97,181 @@ export default function LecturerExamForm({
   };
 
   return (
-    <Card className="border-slate-200 bg-white/90 shadow-sm">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-2xl text-slate-950">Exam Setup</CardTitle>
-        <CardDescription className="text-sm leading-6 text-slate-600">
-          Define the exam basics now. You can handle question authoring and
-          other workflows after the assessment shell has been created.
-        </CardDescription>
+    <Card className="overflow-hidden border-border/80 bg-card/95 shadow-sm">
+      <CardHeader className="border-b border-border/70 bg-gradient-to-br from-background via-background to-muted/30 px-5 py-6 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-2xl space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              Assessment Builder
+            </p>
+            <CardTitle className="text-2xl text-foreground sm:text-3xl">Exam Setup</CardTitle>
+            <CardDescription className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Define the assessment shell with a clear title, timing window, and publication
+              status. You can move into question authoring right after this step.
+            </CardDescription>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:w-[340px] xl:grid-cols-1">
+            <SetupHint
+              icon={FileText}
+              title="Clear structure"
+              description="Keep titles and instructions concise so students understand the assessment immediately."
+            />
+            <SetupHint
+              icon={CalendarDays}
+              title="Timezone aware"
+              description="Schedule fields use the browser timezone and are stored consistently for delivery."
+            />
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-        <form className="space-y-6" onSubmit={handleSubmit}>
+
+      <CardContent className="px-5 py-6 sm:px-6 lg:px-8">
+        <form className="space-y-6 lg:space-y-8" onSubmit={handleSubmit}>
           {error ? (
-            <Alert variant="destructive" className="border-rose-200 bg-rose-50 text-rose-800">
+            <Alert variant="destructive" className="border-destructive/30 bg-destructive/10">
               <AlertTitle>Unable to save exam</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              placeholder="e.g. CSC 401 Final Assessment"
-              value={formValues.title}
-              onChange={(event) => updateField('title', event.target.value)}
-            />
-            <FieldError message={fieldErrors.title} />
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,0.9fr)]">
+            <FormField id="title" label="Title" error={fieldErrors.title}>
+              <Input
+                id="title"
+                placeholder="e.g. CSC 401 Final Assessment"
+                value={formValues.title}
+                onChange={(event) => updateField('title', event.target.value)}
+                className="w-full"
+              />
+            </FormField>
+
+            <div className="min-w-0 rounded-3xl border border-border/80 bg-muted/35 p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-foreground">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background shadow-sm">
+                      <RadioTower className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <Label htmlFor="publish-toggle" className="text-sm font-semibold text-foreground">
+                        Publish exam
+                      </Label>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Turn this on only when students should be able to discover the exam.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 items-center justify-between rounded-2xl border border-border bg-background px-3 py-2 sm:min-w-[132px] sm:justify-center">
+                  <span className="text-sm font-medium text-foreground sm:hidden">
+                    {formValues.isPublished ? 'Published' : 'Draft'}
+                  </span>
+                  <Switch
+                    id="publish-toggle"
+                    checked={formValues.isPublished}
+                    onCheckedChange={(checked) => updateField('isPublished', checked)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <FormField id="description" label="Description" error={fieldErrors.description}>
             <Textarea
               id="description"
               placeholder="Add a short overview, instructions, or grading note."
               value={formValues.description}
               onChange={(event) => updateField('description', event.target.value)}
-              className="min-h-[140px] resize-y"
+              className="min-h-[160px] w-full resize-y"
             />
-            <FieldError message={fieldErrors.description} />
-          </div>
+          </FormField>
 
-          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_auto]">
-            <div className="space-y-2">
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input
-                id="duration"
-                type="number"
-                min="1"
-                step="1"
-                value={formValues.duration}
-                onChange={(event) => updateField('duration', event.target.value)}
-              />
-              <FieldError message={fieldErrors.duration} />
-            </div>
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
+            <FormField id="duration" label="Duration (minutes)" error={fieldErrors.duration}>
+              <div className="relative">
+                <Clock3 className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="duration"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={formValues.duration}
+                  onChange={(event) => updateField('duration', event.target.value)}
+                  className="w-full pl-10"
+                />
+              </div>
+            </FormField>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <Label htmlFor="publish-toggle" className="text-sm font-medium text-slate-950">
-                    Publish exam
-                  </Label>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    Turn this on when students should be able to discover it.
+            <div className="rounded-3xl border border-border/80 bg-muted/35 p-4 sm:p-5 lg:col-span-2">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="min-w-0 rounded-2xl border border-border bg-background p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Access State
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-foreground">
+                    {formValues.isPublished ? 'Visible to students' : 'Private draft'}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    You can still edit questions and details after creating the exam.
                   </p>
                 </div>
-                <Switch
-                  id="publish-toggle"
-                  checked={formValues.isPublished}
-                  onCheckedChange={(checked) => updateField('isPublished', checked)}
-                />
+
+                <div className="min-w-0 rounded-2xl border border-border bg-background p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Timing Rule
+                  </p>
+                  <p className="mt-2 text-base font-semibold text-foreground">Window must make sense</p>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    The end time must be later than the start time before the exam can be saved.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="start-time">Start Time</Label>
+          <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
+            <FormField id="start-time" label="Start Time" error={fieldErrors.startTime}>
               <Input
                 id="start-time"
                 type="datetime-local"
                 value={formValues.startTime}
                 onChange={(event) => updateField('startTime', event.target.value)}
+                className="w-full"
               />
-              <FieldError message={fieldErrors.startTime} />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="end-time">End Time</Label>
+            <FormField id="end-time" label="End Time" error={fieldErrors.endTime}>
               <Input
                 id="end-time"
                 type="datetime-local"
                 value={formValues.endTime}
                 onChange={(event) => updateField('endTime', event.target.value)}
+                className="w-full"
               />
-              <FieldError message={fieldErrors.endTime} />
-            </div>
+            </FormField>
           </div>
 
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Times are captured using the browser&apos;s local timezone and then
-            stored in Supabase as UTC timestamps.
+          <div className="rounded-3xl border border-amber-200/70 bg-amber-50/80 p-4 sm:p-5">
+            <p className="text-sm font-semibold text-amber-900">Scheduling note</p>
+            <p className="mt-2 text-sm leading-6 text-amber-900/90">
+              Times are captured using the browser&apos;s local timezone and then stored in
+              Supabase as UTC timestamps to keep delivery consistent across devices.
+            </p>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-slate-950 text-white hover:bg-slate-800 sm:w-auto"
-            disabled={submitting}
-          >
-            {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {submitting ? 'Saving exam...' : submitLabel}
-          </Button>
+          <div className="flex flex-col gap-3 border-t border-border/70 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+              Create the exam shell first, then continue to question authoring, review, and
+              publication controls on the next screen.
+            </p>
+
+            <Button type="submit" className="w-full sm:w-auto sm:min-w-[200px]" disabled={submitting}>
+              {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {submitting ? 'Saving exam...' : submitLabel}
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

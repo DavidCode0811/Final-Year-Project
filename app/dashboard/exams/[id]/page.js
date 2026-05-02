@@ -7,9 +7,9 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  Trash2,
   FileText,
   Globe2,
-  Plus,
   Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  deleteLecturerExam,
   fetchLecturerExamById,
   updateLecturerExamPublishStatus,
 } from '@/lib/lecturer-exams';
@@ -61,6 +62,7 @@ export default function LecturerExamDetailsPage() {
   const [loadingExam, setLoadingExam] = useState(true);
   const [error, setError] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -124,6 +126,31 @@ export default function LecturerExamDetailsPage() {
     }
   };
 
+  const handleDeleteExam = async () => {
+    if (!exam || !user || deleting) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      'Delete this exam? This will permanently remove the exam and its related records.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      await deleteLecturerExam(exam.id, user.id);
+      toast.success('Exam deleted successfully.');
+      router.push('/dashboard');
+    } catch (deleteError) {
+      toast.error(deleteError.message || 'Unable to delete this exam.');
+      setDeleting(false);
+    }
+  };
+
   if (loading || !user) {
     return <FullScreenLoader message="Checking your workspace..." />;
   }
@@ -170,11 +197,14 @@ export default function LecturerExamDetailsPage() {
                 ? 'Unpublish Exam'
                 : 'Publish Exam'}
           </Button>
-          <Button asChild className="bg-slate-950 text-white hover:bg-slate-800">
-            <Link href="/create-exam">
-              <Plus className="mr-2 h-4 w-4" />
-              Create New Exam
-            </Link>
+          <Button
+            type="button"
+            className="bg-rose-600 text-white hover:bg-rose-700"
+            onClick={handleDeleteExam}
+            disabled={deleting || !exam}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {deleting ? 'Deleting Exam...' : 'Delete Exam'}
           </Button>
         </div>
       }
