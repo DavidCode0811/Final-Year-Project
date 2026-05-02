@@ -15,15 +15,15 @@ import {
 const toneStyles = {
   warning: {
     icon: AlertTriangle,
-    panel: 'border-amber-200 bg-amber-50 text-amber-900',
-    badge: 'bg-amber-100 text-amber-800',
-    button: 'bg-slate-950 text-white hover:bg-slate-800',
+    panel: 'border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
+    badge: 'bg-[hsl(var(--warning)/0.2)] text-[hsl(var(--warning))]',
+    button: '',
   },
   danger: {
     icon: ShieldAlert,
-    panel: 'border-rose-200 bg-rose-50 text-rose-900',
-    badge: 'bg-rose-100 text-rose-800',
-    button: 'bg-rose-600 text-white hover:bg-rose-700',
+    panel: 'border-destructive/35 bg-destructive/12 text-destructive',
+    badge: 'bg-destructive/20 text-destructive',
+    button: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
   },
 };
 
@@ -43,16 +43,16 @@ export function WarningModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onDismiss?.()}>
       <DialogContent className="max-w-md border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
-        <div className={`rounded-3xl border bg-white shadow-2xl ${styles.panel}`}>
-          <div className="border-b border-black/5 px-6 py-5">
+        <div className={`rounded-3xl border bg-card shadow-2xl ${styles.panel}`}>
+          <div className="border-b border-border/40 px-6 py-5">
             <div className="flex items-start gap-4">
-              <div className="rounded-2xl bg-white/80 p-3">
+              <div className="rounded-2xl bg-background/80 p-3">
                 <Icon className="h-6 w-6" />
               </div>
               <div className="min-w-0 flex-1">
                 <DialogHeader className="space-y-2 text-left">
-                  <DialogTitle className="text-xl text-slate-950">{title}</DialogTitle>
-                  <DialogDescription className="text-sm leading-6 text-slate-700">
+                  <DialogTitle className="text-xl text-foreground">{title}</DialogTitle>
+                  <DialogDescription className="text-sm leading-6 text-foreground/80">
                     {message}
                   </DialogDescription>
                 </DialogHeader>
@@ -61,8 +61,8 @@ export function WarningModal({
           </div>
 
           <div className="space-y-4 px-6 py-5">
-            <div className="rounded-2xl border border-black/5 bg-white/80 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <div className="rounded-2xl border border-border/40 bg-background/60 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Violation Count
               </p>
               <div className="mt-2 inline-flex rounded-full px-3 py-1 text-sm font-semibold">
@@ -73,14 +73,14 @@ export function WarningModal({
             </div>
 
             {blocking ? (
-              <p className="text-sm leading-6 text-slate-700">
+              <p className="text-sm leading-6 text-foreground/80">
                 Submission is being processed now. Please stay on this page.
               </p>
             ) : null}
           </div>
 
           {!blocking && onDismiss ? (
-            <DialogFooter className="border-t border-black/5 px-6 py-5">
+            <DialogFooter className="border-t border-border/40 px-6 py-5">
               <Button onClick={onDismiss} className={`w-full ${styles.button}`}>
                 {confirmLabel}
               </Button>

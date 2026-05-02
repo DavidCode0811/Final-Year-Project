@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   FilePlus2,
@@ -13,10 +12,19 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  UserCog,
 } from 'lucide-react';
 
 import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sheet,
   SheetContent,
@@ -26,35 +34,55 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const workspaceConfig = {
   student: {
     label: 'Student',
     icon: GraduationCap,
+    summary: 'Track your assessments and stay exam-ready.',
     items: [
       {
         href: '/dashboard',
         label: 'Dashboard',
         icon: LayoutDashboard,
         match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/result/'),
+        description: 'Overview of available and completed exams.',
+      },
+      {
+        href: '/dashboard/profile',
+        label: 'Profile & Settings',
+        icon: UserCog,
+        match: (pathname) => pathname === '/dashboard/profile',
+        description: 'Manage account details and security settings.',
       },
     ],
   },
   lecturer: {
     label: 'Lecturer',
     icon: ShieldCheck,
+    summary: 'Manage exam lifecycle, questions, and performance.',
     items: [
       {
         href: '/dashboard',
         label: 'Dashboard',
         icon: LayoutDashboard,
         match: (pathname) => pathname === '/dashboard' || pathname.startsWith('/dashboard/exams/'),
+        description: 'Monitor and manage published assessments.',
       },
       {
         href: '/create-exam',
         label: 'Create Exam',
         icon: FilePlus2,
         match: (pathname) => pathname === '/create-exam',
+        description: 'Build a new exam and publish when ready.',
+      },
+      {
+        href: '/dashboard/profile',
+        label: 'Profile & Settings',
+        icon: UserCog,
+        match: (pathname) => pathname === '/dashboard/profile',
+        description: 'Update account profile and credentials.',
       },
     ],
   },
@@ -72,13 +100,13 @@ function WorkspaceSidebar({
   const config = workspaceConfig[user?.role] || workspaceConfig.student;
 
   return (
-    <div className="flex h-screen flex-col overflow-y-auto bg-slate-950 text-white">
+    <div className="flex h-screen flex-col overflow-y-auto bg-card text-card-foreground">
       <div className="flex items-center justify-between px-4 py-5">
         <div className={cn('min-w-0', collapsed && 'hidden')}>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             Navigation
           </p>
-          <p className="mt-2 text-sm text-slate-400">{config.summary}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{config.summary}</p>
         </div>
 
         {showCollapseToggle ? (
@@ -87,7 +115,7 @@ function WorkspaceSidebar({
             variant="ghost"
             size="icon"
             onClick={onToggleCollapse}
-            className="h-10 w-10 rounded-2xl border border-slate-800 bg-slate-900/70 text-slate-300 hover:bg-slate-800 hover:text-white"
+            className="h-10 w-10 rounded-2xl border border-border bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -114,8 +142,8 @@ function WorkspaceSidebar({
                   'block rounded-2xl border transition-all',
                   collapsed ? 'px-3 py-3' : 'px-4 py-4',
                   isActive
-                    ? 'border-white/20 bg-white text-slate-950 shadow-lg'
-                    : 'border-slate-800 bg-slate-900/60 text-slate-200 hover:border-slate-700 hover:bg-slate-900'
+                    ? 'border-primary/30 bg-primary text-primary-foreground shadow-sm'
+                    : 'border-border bg-muted/40 text-foreground hover:border-border hover:bg-accent'
                 )}
               >
                 <div
@@ -127,21 +155,13 @@ function WorkspaceSidebar({
                   <div
                     className={cn(
                       'rounded-xl p-2',
-                      isActive ? 'bg-slate-950/10' : 'bg-white/5'
+                      isActive ? 'bg-primary-foreground/15' : 'bg-background/60'
                     )}
                   >
                     <ItemIcon className="h-4 w-4" />
                   </div>
                   <div className={cn(collapsed && 'hidden')}>
                     <p className="text-sm font-semibold">{item.label}</p>
-                    <p
-                      className={cn(
-                        'mt-1 text-sm',
-                        isActive ? 'text-slate-700' : 'text-slate-400'
-                      )}
-                    >
-                      {item.description}
-                    </p>
                   </div>
                 </div>
               </Link>
@@ -150,20 +170,20 @@ function WorkspaceSidebar({
         </nav>
       </div>
 
-      <div className={cn('border-t border-slate-800 px-6 py-6', collapsed && 'px-3')}>
+      <div className={cn('border-t border-border px-6 py-6', collapsed && 'px-3')}>
         <div
           className={cn(
-            'rounded-2xl border border-slate-800 bg-slate-900/60 p-4',
+            'rounded-2xl border border-border bg-muted/40 p-4',
             collapsed && 'flex justify-center p-3'
           )}
         >
           <div className={cn(collapsed && 'hidden')}>
-            <p className="text-sm font-semibold text-white">{user?.name}</p>
-            <p className="mt-1 text-sm text-slate-400">{user?.email}</p>
+            <p className="text-sm font-semibold text-foreground">{user?.name}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{user?.email}</p>
           </div>
           <div
             className={cn(
-              'hidden h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white',
+              'hidden h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground',
               collapsed && 'flex'
             )}
             aria-hidden={!collapsed}
@@ -173,9 +193,9 @@ function WorkspaceSidebar({
         </div>
 
         <Button
-          variant="secondary"
+          variant="outline"
           className={cn(
-            'mt-4 bg-white text-slate-950 hover:bg-slate-200',
+            'mt-4',
             collapsed ? 'w-full justify-center px-0' : 'w-full justify-start'
           )}
           onClick={onLogout}
@@ -235,11 +255,11 @@ export default function PortalShell({
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.18),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+    <div className="min-h-screen">
       <div className="flex min-h-screen">
         <aside
           className={cn(
-            'sticky top-0 hidden h-screen border-r border-slate-200 bg-slate-950 transition-[width] duration-300 md:block',
+            'sticky top-0 hidden h-screen border-r border-border bg-card transition-[width] duration-300 md:block',
             sidebarCollapsed ? 'w-24' : 'w-80'
           )}
         >
@@ -255,7 +275,7 @@ export default function PortalShell({
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-xl">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-xl">
             <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
               <div className="flex items-start gap-3">
                 <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -286,19 +306,37 @@ export default function PortalShell({
                 </Sheet>
 
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
                     {config.label} 
                   </p>
-                  <h1 className="mt-1 text-2xl font-bold text-slate-950">{title}</h1>
+                  <h1 className="mt-1 text-2xl font-bold text-foreground">{title}</h1>
                   {description ? (
-                    <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">{description}</p>
+                    <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
                   ) : null}
                 </div>
               </div>
 
-              {actions ? (
-                <div className="flex flex-wrap items-center gap-3">{actions}</div>
-              ) : null}
+              <div className="flex flex-wrap items-center gap-3">
+                <ThemeToggle />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button type="button" variant="outline" size="icon" aria-label="Open account menu">
+                      <UserCog className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel className="truncate">
+                      {user?.name || user?.email || 'Account'}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/profile">Profile & Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {actions}
+              </div>
             </div>
           </header>
 

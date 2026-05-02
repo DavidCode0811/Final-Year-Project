@@ -566,7 +566,7 @@ export default function StudentExamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(51,65,85,0.3),_transparent_32%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)]">
       <ExamTimer
         remainingSeconds={remainingSeconds}
         violationCount={violationCount}
@@ -577,12 +577,12 @@ export default function StudentExamPage() {
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:px-6">
         <aside className="lg:w-80 lg:flex-shrink-0">
-          <Card className="border-slate-200 bg-white/92 shadow-sm lg:sticky lg:top-6">
+          <Card className="border-slate-200 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/85 lg:sticky lg:top-6">
             <CardHeader className="space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <CardTitle className="text-xl text-slate-950">{exam.title}</CardTitle>
-                  <CardDescription className="mt-2 text-sm leading-6 text-slate-600">
+                  <CardTitle className="text-xl text-slate-950 dark:text-slate-100">{exam.title}</CardTitle>
+                  <CardDescription className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                     Answer one question at a time. Your progress is being autosaved.
                   </CardDescription>
                 </div>
@@ -591,7 +591,7 @@ export default function StudentExamPage() {
             </CardHeader>
             <CardContent className="space-y-5">
               <div>
-                <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
+                <div className="mb-2 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
                   <span>Answered</span>
                   <span>
                     {answeredCount} / {totalQuestions}
@@ -600,8 +600,8 @@ export default function StudentExamPage() {
                 <Progress value={progressValue} className="h-2 bg-slate-200" />
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                <p className="font-medium text-slate-950">Exam Window</p>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+                <p className="font-medium text-slate-950 dark:text-slate-100">Exam Window</p>
                 <p className="mt-2">Starts {formatDateTime(exam.start_time)}</p>
                 <p className="mt-1">Ends {formatDateTime(exam.end_time)}</p>
               </div>
@@ -609,7 +609,7 @@ export default function StudentExamPage() {
               <Separator />
 
               <div>
-                <p className="text-sm font-medium text-slate-950">Questions</p>
+                <p className="text-sm font-medium text-slate-950 dark:text-slate-100">Questions</p>
                 <ScrollArea className="mt-3 max-h-[320px] pr-3">
                   <div className="grid grid-cols-5 gap-2">
                     {exam.questions?.map((question, index) => {
@@ -626,7 +626,7 @@ export default function StudentExamPage() {
                               ? 'border-slate-950 bg-slate-950 text-white hover:bg-slate-900'
                               : isAnswered
                                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
                           }
                           onClick={() => handleQuestionJump(index)}
                         >
@@ -662,23 +662,30 @@ export default function StudentExamPage() {
 
         <main className="min-w-0 flex-1">
           {currentQuestion ? (
-            <Card className="border-slate-200 bg-white/94 shadow-sm">
+            <Card className="border-slate-200 bg-white/94 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
               <CardHeader className="space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
+                  <div className="mb-2 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+                    <span>Overall progress</span>
+                    <span>{Math.round(progressValue)}%</span>
+                  </div>
+                  <Progress value={progressValue} className="h-2 bg-slate-200 dark:bg-slate-800" />
+                </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
                     <CircleHelp className="h-3.5 w-3.5" />
                     Question {currentQuestionIndex + 1}
                   </div>
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm text-slate-500 dark:text-slate-400">
                     {answeredCount} answered so far
                   </div>
                 </div>
 
                 <div>
-                  <CardTitle className="text-2xl leading-9 text-slate-950">
+                  <CardTitle className="text-2xl leading-9 text-slate-950 dark:text-slate-100">
                     {currentQuestion.question_text}
                   </CardTitle>
-                  <CardDescription className="mt-3 text-sm leading-6 text-slate-600">
+                  <CardDescription className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
                     Choose the best answer below. Your selection autosaves shortly after you click it.
                   </CardDescription>
                 </div>
@@ -694,7 +701,7 @@ export default function StudentExamPage() {
                     <Label
                       key={`${currentQuestion.id}-${index}-${option}`}
                       htmlFor={`question-${currentQuestion.id}-option-${index}`}
-                      className="flex cursor-pointer items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100"
+                      className="flex cursor-pointer items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
                     >
                       <RadioGroupItem
                         id={`question-${currentQuestion.id}-option-${index}`}
@@ -705,7 +712,7 @@ export default function StudentExamPage() {
                         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
                           Option {String.fromCharCode(65 + index)}
                         </p>
-                        <p className="text-sm leading-6 text-slate-700">{option}</p>
+                        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{option}</p>
                       </div>
                     </Label>
                   ))}

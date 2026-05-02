@@ -40,12 +40,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-border/80 bg-card/95 shadow-xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-slate-900 rounded-full">
-              <GraduationCap className="w-8 h-8 text-white" />
+            <div className="rounded-full bg-primary p-3 text-primary-foreground">
+              <GraduationCap className="h-8 w-8" />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
@@ -54,7 +54,7 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+              <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
@@ -86,9 +86,9 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Don't have an account?{' '}
-            <Link href="/register" className="text-slate-900 font-semibold hover:underline">
+            <Link href="/register" className="font-semibold text-primary hover:underline">
               Register
             </Link>
           </p>

@@ -43,6 +43,12 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Status colors (semantic, theme-aware) */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -69,6 +75,12 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Status colors (semantic, theme-aware) */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 20 14.3% 4.1%;
   }
 }
 
@@ -82,8 +94,12 @@
   body {
     @apply bg-background text-foreground antialiased;
     background-image:
-      radial-gradient(circle at top, rgba(148, 163, 184, 0.12), transparent 28%),
-      linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98));
+      radial-gradient(circle at top, hsl(var(--foreground) / 0.06), transparent 28%),
+      linear-gradient(
+        180deg,
+        hsl(var(--background) / 1) 0%,
+        hsl(var(--muted) / 0.55) 100%
+      );
     min-height: 100vh;
   }
 }
