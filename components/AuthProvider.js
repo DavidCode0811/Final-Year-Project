@@ -114,6 +114,8 @@ export function AuthProvider({ children }) {
       active = false;
       subscription.unsubscribe();
     };
+    // This effect owns session bootstrap and subscription lifecycle for the provider.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signIn = async ({ email, password }) => {

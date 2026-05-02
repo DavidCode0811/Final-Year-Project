@@ -109,6 +109,8 @@ export default function StudentProfilePage() {
     if (!loading && user && token) {
       void loadProfile();
     }
+    // `loadProfile` intentionally uses the latest session token and user snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, token, user]);
 
   const handleProfileChange = (event) => {
@@ -237,10 +239,6 @@ export default function StudentProfilePage() {
                 <AlertDescription>{loadError}</AlertDescription>
               </Alert>
             ) : null}
-            <ReadOnlyField
-              label="Student ID / Registration Number"
-              value={studentProfile?.registration_number}
-            />
             <ReadOnlyField
               label="Account Role"
               value={studentProfile?.role ? studentProfile.role.toUpperCase() : 'STUDENT'}
