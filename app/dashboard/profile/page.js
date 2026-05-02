@@ -7,27 +7,55 @@ import { toast } from 'sonner';
 
 import PortalShell from '@/components/PortalShell';
 import { useAuth } from '@/components/AuthProvider';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabase';
+import {
+  changeCurrentPassword,
+  fetchCurrentProfile,
+  updateCurrentProfile,
+} from '@/lib/profile-client';
+import {
+  getValidationMessage,
+  passwordChangeSchema,
+  profileUpdateSchema,
+} from '@/lib/profile-validation';
 
 function ReadOnlyField({ label, value }) {
   return (
     <div className="space-y-2">
-      <Label className="text-slate-600">{label}</Label>
-      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200">
+      <Label className="text-muted-foreground">{label}</Label>
+      <div className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">
         {value || 'Not available'}
       </div>
     </div>
   );
 }
 
+function StatusBanner({ state }) {
+  if (!state?.message) {
+    return null;
+  }
+
+  const tone =
+    state.type === 'success'
+      ? 'border-[hsl(var(--success)/0.35)] bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]'
+      : 'border-destructive/30 bg-destructive/10 text-destructive';
+
+  return (
+    <Alert className={tone}>
+      <AlertDescription>{state.message}</AlertDescription>
+    </Alert>
+  );
+}
+
 export default function StudentProfilePage() {
-  const { user, loading, refreshUser } = useAuth();
+  const { user, token, loading, refreshUser } = useAuth();
   const router = useRouter();
 
+  const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({
     name: '',
     email: '',
@@ -37,22 +65,51 @@ export default function StudentProfilePage() {
     newPassword: '',
     confirmPassword: '',
   });
+  const [pageLoading, setPageLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [profileStatus, setProfileStatus] = useState({ type: '', message: '' });
+  const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+
+  const loadProfile = async () => {
+    if (!token) {
+      setPageLoading(false);
+      return;
+    }
+
+    setPageLoading(true);
+    setLoadError('');
+
+    try {
+      const data = await fetchCurrentProfile(token);
+      const nextProfile = data.user || null;
+
+      setProfile(nextProfile);
+      setProfileForm({
+        name: nextProfile?.name || '',
+        email: nextProfile?.email || '',
+      });
+    } catch (error) {
+      const message = error.message || 'Failed to load your profile.';
+      setLoadError(message);
+      toast.error(message);
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace('/login');
-      return;
-    }
-
-    if (user) {
-      setProfileForm({
-        name: user.name || '',
-        email: user.email || '',
-      });
     }
   }, [loading, router, user]);
+
+  useEffect(() => {
+    if (!loading && user && token) {
+      void loadProfile();
+    }
+  }, [loading, token, user]);
 
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
@@ -72,44 +129,39 @@ export default function StudentProfilePage() {
 
   const saveProfile = async (event) => {
     event.preventDefault();
-    if (!user?.id) return;
 
-    const nextName = profileForm.name.trim();
-    const nextEmail = profileForm.email.trim().toLowerCase();
-
-    if (!nextName || !nextEmail) {
-      toast.error('Full name and email are required.');
+    const validation = profileUpdateSchema.safeParse(profileForm);
+    if (!validation.success) {
+      const message = getValidationMessage(validation.error, 'Invalid profile details.');
+      setProfileStatus({ type: 'error', message });
+      toast.error(message);
       return;
     }
 
     setSavingProfile(true);
+    setProfileStatus({ type: '', message: '' });
+
     try {
-      const { error: userTableError } = await supabase
-        .from('users')
-        .update({
-          name: nextName,
-          email: nextEmail,
-        })
-        .eq('id', user.id);
+      const { name, email } = validation.data;
+      const data = await updateCurrentProfile(token, { name, email });
 
-      if (userTableError) {
-        throw new Error(userTableError.message || 'Failed to update profile details.');
-      }
-
-      if (nextEmail !== (user.email || '').toLowerCase()) {
-        const { error: authEmailError } = await supabase.auth.updateUser({
-          email: nextEmail,
-        });
-
-        if (authEmailError) {
-          throw new Error(authEmailError.message || 'Failed to update account email.');
-        }
-      }
+      setProfile(data.user);
+      setProfileForm({
+        name: data.user?.name || '',
+        email: data.user?.email || '',
+      });
 
       await refreshUser();
-      toast.success('Profile updated successfully.');
+
+      setProfileStatus({
+        type: 'success',
+        message: data.message || 'Profile updated successfully.',
+      });
+      toast.success(data.message || 'Profile updated successfully.');
     } catch (error) {
-      toast.error(error.message || 'Unable to update profile.');
+      const message = error.message || 'Unable to update profile.';
+      setProfileStatus({ type: 'error', message });
+      toast.error(message);
     } finally {
       setSavingProfile(false);
     }
@@ -117,65 +169,52 @@ export default function StudentProfilePage() {
 
   const changePassword = async (event) => {
     event.preventDefault();
-    const { currentPassword, newPassword, confirmPassword } = passwordForm;
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error('Complete all password fields.');
-      return;
-    }
-
-    if (newPassword.length < 8) {
-      toast.error('New password must be at least 8 characters.');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match.');
+    const validation = passwordChangeSchema.safeParse(passwordForm);
+    if (!validation.success) {
+      const message = getValidationMessage(validation.error, 'Invalid password details.');
+      setPasswordStatus({ type: 'error', message });
+      toast.error(message);
       return;
     }
 
     setSavingPassword(true);
+    setPasswordStatus({ type: '', message: '' });
+
     try {
-      const { error: reauthError } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password: currentPassword,
-      });
-
-      if (reauthError) {
-        throw new Error('Current password is incorrect.');
-      }
-
-      const { error: updatePasswordError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
-
-      if (updatePasswordError) {
-        throw new Error(updatePasswordError.message || 'Failed to update password.');
-      }
+      const data = await changeCurrentPassword(token, validation.data);
 
       setPasswordForm({
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
       });
-      toast.success('Password changed successfully.');
+      setPasswordStatus({
+        type: 'success',
+        message: data.message || 'Password changed successfully.',
+      });
+      toast.success(data.message || 'Password changed successfully.');
     } catch (error) {
-      toast.error(error.message || 'Unable to update password.');
+      const message = error.message || 'Unable to update password.';
+      setPasswordStatus({ type: 'error', message });
+      toast.error(message);
     } finally {
       setSavingPassword(false);
     }
   };
 
-  if (loading || !user) {
+  if (loading || pageLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-slate-700" />
-          <p className="mt-3 text-sm text-slate-600">Loading profile settings...</p>
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary" />
+          <p className="mt-3 text-sm text-muted-foreground">Loading profile settings...</p>
         </div>
       </div>
     );
   }
+
+  const studentProfile = profile || user;
 
   return (
     <PortalShell
@@ -184,7 +223,7 @@ export default function StudentProfilePage() {
       contentClassName="mx-auto max-w-5xl"
     >
       <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="border-slate-200 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-950/80 lg:col-span-2">
+        <Card className="border-border/80 bg-card/90 shadow-sm lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <UserRound className="h-5 w-5" />
@@ -193,24 +232,37 @@ export default function StudentProfilePage() {
             <CardDescription>Core account details used across exams and reports.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ReadOnlyField label="Student ID / Registration Number" value={user?.registration_number} />
-            <ReadOnlyField label="Account Role" value={user?.role ? user.role.toUpperCase() : 'STUDENT'} />
-            <ReadOnlyField label="Last Known Name" value={user?.name} />
-            <ReadOnlyField label="Last Known Email" value={user?.email} />
+            {loadError ? (
+              <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
+                <AlertDescription>{loadError}</AlertDescription>
+              </Alert>
+            ) : null}
+            <ReadOnlyField
+              label="Student ID / Registration Number"
+              value={studentProfile?.registration_number}
+            />
+            <ReadOnlyField
+              label="Account Role"
+              value={studentProfile?.role ? studentProfile.role.toUpperCase() : 'STUDENT'}
+            />
+            <ReadOnlyField label="Last Known Name" value={studentProfile?.name} />
+            <ReadOnlyField label="Last Known Email" value={studentProfile?.email} />
           </CardContent>
         </Card>
 
         <div className="space-y-6 lg:col-span-3">
-          <Card className="border-slate-200 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+          <Card className="border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--success))]" />
                 Edit Profile
               </CardTitle>
               <CardDescription>Update your full name and email address.</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4" onSubmit={saveProfile}>
+                <StatusBanner state={profileStatus} />
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
                   <Input
@@ -236,7 +288,7 @@ export default function StudentProfilePage() {
                   />
                 </div>
 
-                <Button type="submit" className="bg-slate-950 text-white hover:bg-slate-800" disabled={savingProfile}>
+                <Button type="submit" disabled={savingProfile}>
                   {savingProfile ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -253,16 +305,18 @@ export default function StudentProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white/90 shadow-sm dark:border-slate-800 dark:bg-slate-950/80">
+          <Card className="border-border/80 bg-card/90 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
-                <KeyRound className="h-5 w-5 text-indigo-600" />
+                <KeyRound className="h-5 w-5 text-primary" />
                 Change Password
               </CardTitle>
               <CardDescription>Use a strong password to protect exam access and submissions.</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4" onSubmit={changePassword}>
+                <StatusBanner state={passwordStatus} />
+
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>
                   <Input
@@ -296,12 +350,7 @@ export default function StudentProfilePage() {
                     required
                   />
                 </div>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="border-slate-300 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
-                  disabled={savingPassword}
-                >
+                <Button type="submit" variant="outline" disabled={savingPassword}>
                   {savingPassword ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -20,10 +20,14 @@ export function AuthProvider({ children }) {
 
     window.localStorage.removeItem('token');
     window.localStorage.removeItem('user');
+  };
 
-    if (supabaseStorageKey) {
-      window.localStorage.removeItem(supabaseStorageKey);
+  const clearSupabaseStorage = () => {
+    if (typeof window === 'undefined' || !supabaseStorageKey) {
+      return;
     }
+
+    window.localStorage.removeItem(supabaseStorageKey);
   };
 
   const syncProfile = async (accessToken) => {
@@ -178,6 +182,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     await supabase.auth.signOut();
     clearLegacyStorage();
+    clearSupabaseStorage();
     setUser(null);
     setToken(null);
     setLoading(false);
