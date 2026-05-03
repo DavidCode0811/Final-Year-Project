@@ -29,8 +29,8 @@ function FullScreenLoader({ message }) {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-slate-900" />
-        <p className="mt-4 text-gray-600">{message}</p>
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        <p className="mt-4 text-muted-foreground">{message}</p>
       </div>
     </div>
   );
@@ -49,8 +49,8 @@ function formatDateTime(value) {
 
 function formatStatusTone(isPublished) {
   return isPublished
-    ? 'border-emerald-200 bg-emerald-50/90 text-emerald-700'
-    : 'border-amber-200 bg-amber-50/90 text-amber-700';
+    ? 'border-[hsl(var(--success)/0.35)] bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]'
+    : 'border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]';
 }
 
 export default function LecturerExamDetailsPage() {
@@ -169,13 +169,13 @@ export default function LecturerExamDetailsPage() {
       description="Review the assessment metadata you just created and confirm the publishing window."
       actions={
         <div className="flex flex-wrap items-center gap-3">
-          <Button asChild variant="outline" className="border-slate-300 bg-white/80">
+          <Button asChild variant="outline" className="bg-background/80">
             <Link href="/dashboard">Back to Dashboard</Link>
           </Button>
-          <Button asChild variant="outline" className="border-slate-300 bg-white/80">
+          <Button asChild variant="outline" className="bg-background/80">
             <Link href={`/dashboard/exams/${examId}/questions`}>Manage Questions</Link>
           </Button>
-          <Button asChild variant="outline" className="border-slate-300 bg-white/80">
+          <Button asChild variant="outline" className="bg-background/80">
             <Link href={`/dashboard/exams/${examId}/results`}>View Results</Link>
           </Button>
           <Button
@@ -183,8 +183,8 @@ export default function LecturerExamDetailsPage() {
             variant={exam?.is_published ? 'outline' : 'default'}
             className={
               exam?.is_published
-                ? 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                ? 'border-[hsl(var(--warning)/0.45)] bg-background text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.12)]'
+                : 'bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] hover:bg-[hsl(var(--success)/0.9)]'
             }
             onClick={handlePublishToggle}
             disabled={publishing || !exam}
@@ -199,7 +199,7 @@ export default function LecturerExamDetailsPage() {
           </Button>
           <Button
             type="button"
-            className="bg-rose-600 text-white hover:bg-rose-700"
+            variant="destructive"
             onClick={handleDeleteExam}
             disabled={deleting || !exam}
           >
@@ -211,13 +211,13 @@ export default function LecturerExamDetailsPage() {
       contentClassName="mx-auto max-w-5xl"
     >
       {error ? (
-        <Card className="border-rose-200 bg-rose-50 shadow-sm">
+        <Card className="border-destructive/30 bg-destructive/10 shadow-sm">
           <CardContent className="space-y-4 p-6">
             <div>
-              <h2 className="text-lg font-semibold text-rose-900">Exam unavailable</h2>
-              <p className="mt-2 text-sm leading-6 text-rose-800">{error}</p>
+              <h2 className="text-lg font-semibold text-destructive">Exam unavailable</h2>
+              <p className="mt-2 text-sm leading-6 text-destructive">{error}</p>
             </div>
-            <Button asChild variant="outline" className="border-rose-300 bg-white text-rose-800">
+            <Button asChild variant="outline" className="border-destructive/30 bg-background text-destructive hover:bg-destructive/10">
               <Link href="/dashboard">Return to Dashboard</Link>
             </Button>
           </CardContent>
@@ -225,46 +225,46 @@ export default function LecturerExamDetailsPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-6">
-            <Card className="overflow-hidden border-slate-200/80 bg-white/90 shadow-[0_30px_60px_-36px_rgba(15,23,42,0.42)]">
-              <CardHeader className="space-y-6 border-b border-slate-200/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.04),rgba(99,102,241,0.08),rgba(14,165,233,0.06))] pb-8">
+            <Card className="overflow-hidden border-border/80 bg-card/95 shadow-[0_30px_60px_-36px_hsl(var(--foreground)/0.35)]">
+              <CardHeader className="space-y-6 border-b border-border/70 bg-[linear-gradient(135deg,hsl(var(--muted)/0.72),hsl(var(--primary)/0.08),hsl(var(--accent)/0.48))] pb-8">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="max-w-2xl">
                     <div className="mb-4 flex flex-wrap items-center gap-3">
                       <Badge variant="outline" className={formatStatusTone(exam.is_published)}>
                         {exam.is_published ? 'Published' : 'Draft'}
                       </Badge>
-                      <div className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 backdrop-blur">
-                        <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                      <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
                         Exam workspace
                       </div>
                     </div>
-                    <CardTitle className="text-3xl font-bold leading-tight text-slate-950">
+                    <CardTitle className="text-3xl font-bold leading-tight text-foreground">
                       {exam.title}
                     </CardTitle>
-                    <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600">
+                    <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
                       Review the assessment setup, confirm the schedule, and move straight into
                       question authoring or publication.
                     </p>
                   </div>
 
                   <div className="grid min-w-[220px] gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                    <div className="rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    <div className="rounded-lg border border-border bg-background/75 p-4 shadow-sm backdrop-blur">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                         Duration
                       </p>
-                      <p className="mt-3 text-2xl font-semibold text-slate-950">
+                      <p className="mt-3 text-2xl font-semibold text-foreground">
                         {exam.duration}
-                        <span className="ml-1 text-base font-medium text-slate-500">mins</span>
+                        <span className="ml-1 text-base font-medium text-muted-foreground">mins</span>
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    <div className="rounded-lg border border-border bg-background/75 p-4 shadow-sm backdrop-blur">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                         Availability
                       </p>
-                      <p className="mt-3 text-sm font-semibold text-slate-950">
+                      <p className="mt-3 text-sm font-semibold text-foreground">
                         {exam.start_time && exam.end_time ? 'Timed window set' : 'Schedule pending'}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
                         {exam.start_time ? 'Students will see a defined exam window.' : 'Add a start and end time when ready.'}
                       </p>
                     </div>
@@ -273,76 +273,76 @@ export default function LecturerExamDetailsPage() {
               </CardHeader>
               <CardContent className="space-y-6 p-6">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5">
+                  <div className="rounded-lg border border-border/80 bg-muted/45 p-5">
                     <div className="flex items-start gap-3">
-                      <div className="rounded-2xl bg-slate-900 p-2.5 text-white shadow-sm">
+                      <div className="rounded-lg bg-primary p-2.5 text-primary-foreground shadow-sm">
                         <Clock3 className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-500">Duration</p>
-                        <p className="mt-1 text-lg font-semibold text-slate-950">
+                        <p className="text-sm font-medium text-muted-foreground">Duration</p>
+                        <p className="mt-1 text-lg font-semibold text-foreground">
                           {exam.duration} minutes
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5">
+                  <div className="rounded-lg border border-border/80 bg-muted/45 p-5">
                     <div className="flex items-start gap-3">
-                      <div className="rounded-2xl bg-indigo-600 p-2.5 text-white shadow-sm">
+                      <div className="rounded-lg bg-primary/15 p-2.5 text-primary shadow-sm">
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-500">Created</p>
-                        <p className="mt-1 text-lg font-semibold text-slate-950">
+                        <p className="text-sm font-medium text-muted-foreground">Created</p>
+                        <p className="mt-1 text-lg font-semibold text-foreground">
                           {formatDateTime(exam.created_at)}
                         </p>
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-3xl border border-slate-200/80 bg-slate-50/80 p-5">
+                  <div className="rounded-lg border border-border/80 bg-muted/45 p-5">
                     <div className="flex items-start gap-3">
-                      <div className="rounded-2xl bg-emerald-600 p-2.5 text-white shadow-sm">
+                      <div className="rounded-lg bg-[hsl(var(--success)/0.16)] p-2.5 text-[hsl(var(--success))] shadow-sm">
                         <Globe2 className="h-4 w-4" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-500">Status</p>
-                        <p className="mt-1 text-lg font-semibold text-slate-950">
+                        <p className="text-sm font-medium text-muted-foreground">Status</p>
+                        <p className="mt-1 text-lg font-semibold text-foreground">
                           {exam.is_published ? 'Live for students' : 'Private draft'}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <div className="rounded-lg border border-border/80 bg-background/55 p-6 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                     Description
                   </p>
-                  <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                  <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-foreground/85">
                     {exam.description || 'No description provided.'}
                   </p>
                 </div>
                 <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                  <div className="rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-sm">
+                  <div className="rounded-lg border border-border/80 bg-background/55 p-6 shadow-sm">
                     <div className="flex items-start gap-4">
-                      <div className="rounded-2xl bg-sky-100 p-3 text-sky-700">
+                      <div className="rounded-lg bg-primary/10 p-3 text-primary">
                         <CalendarDays className="h-5 w-5" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-950">Exam Window</p>
+                        <p className="text-sm font-semibold text-foreground">Exam Window</p>
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl bg-slate-50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="rounded-lg bg-muted/60 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                               Opens
                             </p>
-                            <p className="mt-2 text-sm leading-6 text-slate-700">
+                            <p className="mt-2 text-sm leading-6 text-foreground/85">
                               {formatDateTime(exam.start_time)}
                             </p>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                          <div className="rounded-lg bg-muted/60 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                               Closes
                             </p>
-                            <p className="mt-2 text-sm leading-6 text-slate-700">
+                            <p className="mt-2 text-sm leading-6 text-foreground/85">
                               {formatDateTime(exam.end_time)}
                             </p>
                           </div>
@@ -350,19 +350,19 @@ export default function LecturerExamDetailsPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-[28px] border border-slate-200/80 bg-slate-950 p-6 text-white shadow-[0_26px_60px_-36px_rgba(15,23,42,0.9)]">
+                  <div className="rounded-lg border border-primary/20 bg-primary p-6 text-primary-foreground shadow-[0_26px_60px_-36px_hsl(var(--foreground)/0.7)]">
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                      <CheckCircle2 className="h-5 w-5" />
                       <p className="text-sm font-semibold">Ready for the next step</p>
                     </div>
-                    <p className="mt-4 text-sm leading-7 text-slate-300">
+                    <p className="mt-4 text-sm leading-7 text-primary-foreground/75">
                       The exam shell is set up. You can now add questions, inspect results, or publish when the timing is right.
                     </p>
-                    <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    <div className="mt-6 rounded-lg border border-primary-foreground/15 bg-primary-foreground/10 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary-foreground/65">
                         Exam ID
                       </p>
-                      <p className="mt-3 break-all text-sm text-slate-200">{exam.id}</p>
+                      <p className="mt-3 break-all text-sm text-primary-foreground/90">{exam.id}</p>
                     </div>
                   </div>
                 </div>
@@ -370,22 +370,22 @@ export default function LecturerExamDetailsPage() {
             </Card>
           </div>
 
-          <Card className="border-slate-200/80 bg-white/85 shadow-[0_24px_48px_-36px_rgba(15,23,42,0.45)]">
+          <Card className="border-border/80 bg-card/90 shadow-[0_24px_48px_-36px_hsl(var(--foreground)/0.4)]">
             <CardContent className="space-y-4 p-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                   Quick Actions
                 </p>
-                <h2 className="mt-2 text-lg font-semibold text-slate-950">
+                <h2 className="mt-2 text-lg font-semibold text-foreground">
                   Keep building this assessment
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   Use these shortcuts to continue authoring, inspect results, or change publication state.
                 </p>
               </div>
 
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                <p className="font-medium text-slate-950">Current state</p>
+              <div className="rounded-lg border border-border bg-muted/45 p-4 text-sm leading-6 text-muted-foreground">
+                <p className="font-medium text-foreground">Current state</p>
                 <p className="mt-2">
                   {exam.is_published
                     ? 'Students can already access this exam during its active window.'
@@ -393,10 +393,10 @@ export default function LecturerExamDetailsPage() {
                 </p>
               </div>
 
-              <Button asChild className="h-11 w-full rounded-xl bg-slate-950 text-white hover:bg-slate-800">
+              <Button asChild className="h-11 w-full rounded-lg">
                 <Link href={`/dashboard/exams/${examId}/questions`}>Manage Questions</Link>
               </Button>
-              <Button asChild variant="outline" className="h-11 w-full rounded-xl border-slate-300 bg-white">
+              <Button asChild variant="outline" className="h-11 w-full rounded-lg bg-background">
                 <Link href={`/dashboard/exams/${examId}/results`}>View Results</Link>
               </Button>
 
@@ -405,8 +405,8 @@ export default function LecturerExamDetailsPage() {
                 variant={exam.is_published ? 'outline' : 'default'}
                 className={
                   exam.is_published
-                    ? 'h-11 w-full rounded-xl border-amber-300 bg-white text-amber-800 hover:bg-amber-50'
-                    : 'h-11 w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700'
+                    ? 'h-11 w-full rounded-lg border-[hsl(var(--warning)/0.45)] bg-background text-[hsl(var(--warning))] hover:bg-[hsl(var(--warning)/0.12)]'
+                    : 'h-11 w-full rounded-lg bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] hover:bg-[hsl(var(--success)/0.9)]'
                 }
                 onClick={handlePublishToggle}
                 disabled={publishing}

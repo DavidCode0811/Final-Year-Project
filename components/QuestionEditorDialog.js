@@ -29,7 +29,7 @@ function FieldError({ message }) {
     return null;
   }
 
-  return <p className="text-sm text-rose-600">{message}</p>;
+  return <p className="text-sm text-destructive">{message}</p>;
 }
 
 export default function QuestionEditorDialog({
@@ -38,6 +38,7 @@ export default function QuestionEditorDialog({
   mode = 'create',
   initialValues,
   onSubmit,
+  onDraftChange,
   submitting = false,
 }) {
   const [formValues, setFormValues] = useState(initialValues);
@@ -49,6 +50,12 @@ export default function QuestionEditorDialog({
       setFieldErrors({});
     }
   }, [initialValues, open]);
+
+  useEffect(() => {
+    if (open) {
+      onDraftChange?.(formValues);
+    }
+  }, [formValues, onDraftChange, open]);
 
   const availableAnswerOptions = useMemo(
     () =>
@@ -113,12 +120,12 @@ export default function QuestionEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-slate-200 bg-white sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-border bg-card sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-slate-950">
+          <DialogTitle className="text-foreground">
             {mode === 'edit' ? 'Edit Question' : 'Add Question'}
           </DialogTitle>
-          <DialogDescription className="text-sm leading-6 text-slate-600">
+          <DialogDescription className="text-sm leading-6 text-muted-foreground">
             Capture the prompt, answer choices, scoring weight, and display order for this exam question.
           </DialogDescription>
         </DialogHeader>
@@ -139,7 +146,7 @@ export default function QuestionEditorDialog({
           <div className="space-y-3">
             <div>
               <Label>Options</Label>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Fill at least two options. Empty option fields will be ignored when saving.
               </p>
             </div>
@@ -212,7 +219,7 @@ export default function QuestionEditorDialog({
             <Button
               type="button"
               variant="outline"
-              className="border-slate-300 bg-white"
+              className="bg-background"
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >
@@ -220,7 +227,6 @@ export default function QuestionEditorDialog({
             </Button>
             <Button
               type="submit"
-              className="bg-slate-950 text-white hover:bg-slate-800"
               disabled={submitting}
             >
               {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

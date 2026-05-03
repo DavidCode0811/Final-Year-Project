@@ -213,7 +213,6 @@ export default function PortalShell({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const config = workspaceConfig[user?.role] || workspaceConfig.student;
-  const showThemeToggle = pathname === '/dashboard';
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -310,7 +309,7 @@ export default function PortalShell({
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                {showThemeToggle ? <ThemeToggle /> : null}
+                <ThemeToggle />
                 {actions}
               </div>
             </div>
