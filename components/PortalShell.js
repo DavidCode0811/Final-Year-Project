@@ -207,6 +207,7 @@ export default function PortalShell({
   actions,
   children,
   contentClassName,
+  showThemeToggle = true,
 }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
@@ -309,7 +310,7 @@ export default function PortalShell({
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <ThemeToggle />
+                {showThemeToggle ? <ThemeToggle /> : null}
                 {actions}
               </div>
             </div>

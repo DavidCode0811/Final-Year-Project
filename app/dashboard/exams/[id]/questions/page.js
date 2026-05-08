@@ -88,7 +88,7 @@ function formatDateTime(value) {
 }
 
 export default function ExamQuestionsPage() {
-  const { user, loading } = useAuth();
+  const { user, token, loading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const examId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -120,7 +120,7 @@ export default function ExamQuestionsPage() {
   }, [loading, router, user]);
 
   const loadQuestions = async () => {
-    if (!examId || !user) {
+    if (!examId || !user || !token) {
       return;
     }
 
@@ -128,7 +128,7 @@ export default function ExamQuestionsPage() {
     setLoadError('');
 
     try {
-      const data = await fetchExamQuestionsForLecturer(examId, user);
+      const data = await fetchExamQuestionsForLecturer(examId, user, token);
       setExam(data.exam);
       setQuestions(sortQuestionsByOrder(data.questions || []));
     } catch (error) {
@@ -139,10 +139,10 @@ export default function ExamQuestionsPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'lecturer' && examId) {
+    if (user?.role === 'lecturer' && token && examId) {
       loadQuestions();
     }
-  }, [examId, user]);
+  }, [examId, token, user]);
 
   const totalMarks = useMemo(
     () => questions.reduce((total, question) => total + Number(question.marks || 0), 0),
@@ -164,7 +164,7 @@ export default function ExamQuestionsPage() {
   };
 
   const handleSaveQuestion = async (values) => {
-    if (!user) {
+    if (!user || !token) {
       toast.error('You need to be signed in to manage questions.');
       return;
     }
@@ -173,10 +173,10 @@ export default function ExamQuestionsPage() {
 
     try {
       if (editorMode === 'edit' && editingQuestionId) {
-        await updateQuestionForLecturer(examId, editingQuestionId, user, values);
+        await updateQuestionForLecturer(examId, editingQuestionId, user, token, values);
         toast.success('Question updated successfully.');
       } else {
-        await createQuestionForLecturer(examId, user, values);
+        await createQuestionForLecturer(examId, user, token, values);
         toast.success('Question added successfully.');
       }
 
@@ -190,14 +190,14 @@ export default function ExamQuestionsPage() {
   };
 
   const handleDeleteQuestion = async () => {
-    if (!questionPendingDelete || !user) {
+    if (!questionPendingDelete || !user || !token) {
       return;
     }
 
     setDeletingQuestion(true);
 
     try {
-      await deleteQuestionForLecturer(examId, questionPendingDelete.id, user);
+      await deleteQuestionForLecturer(examId, questionPendingDelete.id, user, token);
       toast.success('Question deleted successfully.');
       setQuestionPendingDelete(null);
       await loadQuestions();

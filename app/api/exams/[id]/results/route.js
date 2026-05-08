@@ -16,12 +16,14 @@ function getAttemptTimeTakenSeconds(attempt) {
 
 export async function GET(request, { params }) {
   try {
-    const { db, profile } = await getAuthenticatedAppUser(request, {
-      requireRole: 'lecturer',
-    });
+    const { db, profile } = await getAuthenticatedAppUser(request);
     const { id: examId } = await params;
 
-    const { data: exam, error: examError } = await db
+    if (!['lecturer', 'admin'].includes(profile.role)) {
+      return NextResponse.json({ error: 'Only lecturers or admins can view exam results.' }, { status: 403 });
+    }
+
+    let examQuery = db
       .from('exams')
       .select(
         `
@@ -37,9 +39,13 @@ export async function GET(request, { params }) {
           )
         `
       )
-      .eq('id', examId)
-      .eq('lecturer_id', profile.id)
-      .maybeSingle();
+      .eq('id', examId);
+
+    if (profile.role !== 'admin') {
+      examQuery = examQuery.eq('lecturer_id', profile.id);
+    }
+
+    const { data: exam, error: examError } = await examQuery.maybeSingle();
 
     if (examError) {
       throw new Error(examError.message || 'Failed to load exam details.');
@@ -92,6 +98,16 @@ export async function GET(request, { params }) {
       throw new Error(attemptsError.message || 'Failed to load exam attempts.');
     }
 
+    const { data: activityLogs, error: logsError } = await db
+      .from('activity_logs')
+      .select('id, user_id, event_type, timestamp, metadata')
+      .eq('exam_id', examId)
+      .order('timestamp', { ascending: false });
+
+    if (logsError) {
+      throw new Error(logsError.message || 'Failed to load activity logs.');
+    }
+
     const questions = [...(exam.questions || [])].sort(
       (left, right) => Number(left.order_index ?? 0) - Number(right.order_index ?? 0)
     );
@@ -99,6 +115,20 @@ export async function GET(request, { params }) {
       (total, question) => total + Number(question.marks || 0),
       0
     );
+
+    const logsByStudentId = new Map();
+
+    for (const log of activityLogs || []) {
+      const key = String(log.user_id);
+      const existing = logsByStudentId.get(key) || [];
+      existing.push({
+        id: log.id,
+        eventType: log.event_type,
+        timestamp: log.timestamp,
+        metadata: log.metadata || {},
+      });
+      logsByStudentId.set(key, existing);
+    }
 
     const rows = (attempts || []).map((attempt) => {
       const answersByQuestionId = new Map(
@@ -124,19 +154,36 @@ export async function GET(request, { params }) {
           earnedMarks: isCorrect ? Number(question.marks || 0) : 0,
         };
       });
+      const correctCount = questionResults.filter((question) => question.isCorrect).length;
+      const wrongCount = Math.max(0, questionResults.length - correctCount);
+      const activityLogRows = logsByStudentId.get(String(attempt.student_id)) || [];
+      const tabSwitchCount = activityLogRows.filter((log) => log.eventType === 'tab_switch').length;
+      const suspiciousActivityCount = activityLogRows.filter((log) =>
+        ['tab_switch', 'inactive', 'multi_tab'].includes(log.eventType)
+      ).length;
 
       return {
         id: attempt.id,
         studentId: attempt.student_id,
         studentName: attempt.student?.name || 'Unknown Student',
         studentEmail: attempt.student?.email || '',
+        examTitle: exam.title,
         score: Number(attempt.score || 0),
+        percentage:
+          totalPossibleScore > 0
+            ? Math.round((Number(attempt.score || 0) / totalPossibleScore) * 1000) / 10
+            : 0,
+        correctCount,
+        wrongCount,
         status: attempt.status,
         submissionType: attempt.status === 'auto_submitted' ? 'auto' : 'manual',
         startedAt: attempt.started_at,
         endTime: attempt.end_time || attempt.submitted_at,
         submittedAt: attempt.submitted_at || attempt.end_time,
         timeTakenSeconds: getAttemptTimeTakenSeconds(attempt),
+        tabSwitchCount,
+        suspiciousActivityCount,
+        activityLogs: activityLogRows,
         questionResults,
       };
     });
@@ -161,4 +208,3 @@ export async function GET(request, { params }) {
     );
   }
 }
-
