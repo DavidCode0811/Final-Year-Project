@@ -466,67 +466,114 @@ export default function StudentExamPage() {
   if (!hasStarted) {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] p-4 sm:p-6">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <Card className="overflow-hidden border-slate-200 bg-slate-950/95 text-white shadow-2xl shadow-slate-900/20">
+            <CardContent className="space-y-6 p-7">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Exam Brief
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-semibold tracking-tight text-white">{exam.title}</h1>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                      {exam.description || 'Review the exam details below and start when you are ready.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:text-right">
+                  <div className="rounded-3xl bg-white/10 px-4 py-3 text-sm">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Status</p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {availability.available ? 'Ready to start' : 'Unavailable'}
+                    </p>
+                  </div>
+                  <div className="rounded-3xl bg-white/10 px-4 py-3 text-sm">
+                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Questions</p>
+                    <p className="mt-2 text-lg font-semibold text-white">{exam.questions?.length || 0}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Card className="border-slate-200 bg-white/95 shadow-lg">
+              <CardContent className="space-y-3 p-6">
+                <p className="text-sm font-semibold text-slate-950">Duration</p>
+                <p className="text-3xl font-semibold text-slate-950">{exam.duration} minutes</p>
+                <p className="text-sm text-slate-600">Complete the exam within the allotted time.</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 bg-white/95 shadow-lg">
+              <CardContent className="space-y-3 p-6">
+                <p className="text-sm font-semibold text-slate-950">Exam window</p>
+                <p className="text-sm text-slate-600">Starts</p>
+                <p className="text-lg font-semibold text-slate-950">{formatDateTime(exam.start_time)}</p>
+                <p className="text-sm text-slate-600">Ends</p>
+                <p className="text-lg font-semibold text-slate-950">{formatDateTime(exam.end_time)}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 bg-white/95 shadow-lg">
+              <CardContent className="space-y-3 p-6">
+                <p className="text-sm font-semibold text-slate-950">Exam readiness</p>
+                <p className="text-sm text-slate-600">Make sure you have a stable connection and enough time to finish.</p>
+                <div className="grid gap-2 pt-2 text-sm text-slate-700">
+                  <div className="rounded-2xl bg-slate-50 p-3">Review all questions before answering.</div>
+                  <div className="rounded-2xl bg-slate-50 p-3">Your progress is automatically saved.</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 bg-white/95 shadow-lg">
+              <CardContent className="space-y-3 p-6">
+                <p className="text-sm font-semibold text-slate-950">Exam instructions</p>
+                <ul className="space-y-2 text-sm leading-6 text-slate-600">
+                  <li>One attempt is recorded for this exam.</li>
+                  <li>Your answers are autosaved to Supabase and localStorage.</li>
+                  <li>Refresh or network changes will not erase saved progress.</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+
+          {!availability.available ? (
+            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 sm:px-6 sm:py-5">
+              <p className="font-semibold">Exam not yet available</p>
+              <p className="mt-2 text-amber-800">{availability.reason}</p>
+            </div>
+          ) : null}
+
+          {(exam.questions?.length || 0) === 0 ? (
+            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-900 sm:px-6 sm:py-5">
+              <p className="font-semibold">No questions available</p>
+              <p className="mt-2 text-rose-800">This exam does not contain any questions yet, so it cannot be started.</p>
+            </div>
+          ) : null}
+
           <Card className="border-slate-200 bg-white/95 shadow-xl">
-            <CardHeader className="space-y-4">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Student Workspace
-              </div>
-              <div>
-                <CardTitle className="text-3xl text-slate-950">{exam.title}</CardTitle>
-                <CardDescription className="mt-2 text-sm leading-6 text-slate-600">
-                  {exam.description || 'Read the instructions below before starting the exam.'}
-                </CardDescription>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-medium text-slate-950">Duration</p>
-                  <p className="mt-1 text-sm text-slate-600">{exam.duration} minutes</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-medium text-slate-950">Questions</p>
-                  <p className="mt-1 text-sm text-slate-600">{exam.questions?.length || 0}</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-medium text-slate-950">Start Time</p>
-                  <p className="mt-1 text-sm text-slate-600">{formatDateTime(exam.start_time)}</p>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-sm font-medium text-slate-950">End Time</p>
-                  <p className="mt-1 text-sm text-slate-600">{formatDateTime(exam.end_time)}</p>
-                </div>
+            <CardContent className="space-y-6 p-6 sm:p-7">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-slate-950">Ready when you are</p>
+                <p className="text-sm leading-6 text-slate-600">
+                  When you begin, your attempt will be created immediately and your work will be saved automatically.
+                </p>
               </div>
 
-              {!availability.available ? (
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                  <p className="font-medium text-amber-900">Exam unavailable</p>
-                  <p className="mt-2 text-sm leading-6 text-amber-800">{availability.reason}</p>
-                </div>
-              ) : null}
-
-              {(exam.questions?.length || 0) === 0 ? (
-                <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                  <p className="font-medium text-rose-900">Questions not ready</p>
-                  <p className="mt-2 text-sm leading-6 text-rose-800">
-                    This exam does not have any questions yet, so it cannot be started.
-                  </p>
-                </div>
-              ) : null}
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-sm font-medium text-slate-950">What happens when you start</p>
-                <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
-                  <li>A new `exam_attempts` record is created or your in-progress attempt is resumed.</li>
-                  <li>Your answers stay in local state first and are autosaved to Supabase.</li>
-                  <li>Your progress is also mirrored to localStorage so a refresh can restore it.</li>
+              <div className="space-y-3 rounded-3xl bg-slate-50 p-5 text-sm text-slate-600">
+                <p className="font-semibold text-slate-950">What happens when you start</p>
+                <ul className="mt-3 space-y-2">
+                  <li>A new exam attempt is started or your in-progress attempt is resumed.</li>
+                  <li>Answers are autosaved in the browser and persisted to the server.</li>
+                  <li>You can refresh the page and continue where you left off.</li>
                 </ul>
               </div>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
                   className="bg-slate-950 text-white hover:bg-slate-800"

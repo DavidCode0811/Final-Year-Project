@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   Clock3,
   FileText,
-  LineChart,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -100,6 +99,56 @@ function getExamDisplayStatus(exam) {
   };
 }
 
+function getStudentExamStatus(exam) {
+  const now = Date.now();
+  const startsAt = exam.start_time ? new Date(exam.start_time).getTime() : null;
+  const endsAt = exam.end_time ? new Date(exam.end_time).getTime() : null;
+
+  if (endsAt != null && !Number.isNaN(endsAt) && endsAt < now) {
+    return {
+      label: 'Closed',
+      className: 'border-border/70 bg-muted/70 text-muted-foreground',
+    };
+  }
+
+  if (startsAt != null && !Number.isNaN(startsAt) && startsAt > now) {
+    return {
+      label: 'Upcoming',
+      className:
+        'border-[hsl(var(--warning)/0.35)] bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
+    };
+  }
+
+  return {
+    label: 'Available',
+    className:
+      'border-[hsl(var(--success)/0.35)] bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]',
+  };
+}
+
+function StudentStatCard({ icon: Icon, label, value, tone = 'slate' }) {
+  const tones = {
+    slate: 'bg-muted/60 text-foreground',
+    emerald: 'bg-[hsl(var(--success)/0.18)] text-[hsl(var(--success))]',
+    amber: 'bg-[hsl(var(--warning)/0.18)] text-[hsl(var(--warning))]',
+    indigo: 'bg-primary/15 text-primary',
+  };
+
+  return (
+    <div className="rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-200 hover:border-primary/30">
+      <div className="flex items-center justify-between gap-4">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tones[tone]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="text-right">
+          <p className="text-xs uppercase tracking-[0.28em] text-muted-foreground">{label}</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LecturerExamCard({ exam, lecturerId, onMergeExam, onRequestDelete }) {
   const [publishBusy, setPublishBusy] = useState(false);
   const status = getExamDisplayStatus(exam);
@@ -144,35 +193,36 @@ function LecturerExamCard({ exam, lecturerId, onMergeExam, onRequestDelete }) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground opacity-80 transition-opacity hover:bg-muted/80 hover:text-foreground hover:opacity-100"
+                  className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground opacity-0 transition-all duration-200 group-hover:opacity-100 hover:bg-muted/80 hover:text-foreground dark:hover:bg-slate-800 dark:hover:text-slate-100"
                   aria-label="Exam actions"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem asChild>
+              <DropdownMenuContent align="end" className="w-52 rounded-xl border-border/70 bg-card/95 dark:border-slate-700 dark:bg-slate-900/95">
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800">
                   <Link href={`/dashboard/exams/${exam.id}`}>
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit exam
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800">
                   <Link href={`/dashboard/exams/${exam.id}/results`}>
                     <BarChart3 className="mr-2 h-4 w-4" />
                     View results
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-border/50 dark:bg-slate-700" />
                 <DropdownMenuItem
                   disabled={publishBusy}
+                  className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800 disabled:opacity-50"
                   onClick={() => void handlePublishToggle()}
                 >
                   {exam.is_published ? 'Unpublish' : 'Publish'}
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-border/50 dark:bg-slate-700" />
                 <DropdownMenuItem
-                  className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  className="rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20 focus:bg-destructive/10 focus:text-destructive"
                   onClick={() => onRequestDelete(exam)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -262,6 +312,98 @@ function SummaryCard({ icon: Icon, label, value, tone = 'slate' }) {
         <div>
           <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-2xl font-bold tracking-tight text-foreground">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CompactStatCard({ icon: Icon, label, value, tone = 'slate' }) {
+  const tones = {
+    slate: 'bg-muted/70 text-foreground',
+    emerald: 'bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))]',
+    amber: 'bg-[hsl(var(--warning)/0.12)] text-[hsl(var(--warning))]',
+    indigo: 'bg-primary/10 text-primary',
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-3xl border border-border/70 bg-card/95 p-4 shadow-sm">
+      <div className={`grid h-11 w-11 place-items-center rounded-2xl ${tones[tone]}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">{label}</p>
+        <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function StudentExamCard({ exam }) {
+  const status = getStudentExamStatus(exam);
+
+  return (
+    <Card className="group flex h-full flex-col rounded-[28px] border border-border/70 bg-card/95 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)] dark:hover:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)]">
+      <CardContent className="flex h-full flex-col gap-6 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="text-xl font-semibold tracking-tight text-foreground">{exam.title}</h3>
+            <p className="mt-2 text-sm text-muted-foreground">By {exam.lecturer?.name || 'Unknown'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] ${status.className}`}
+            >
+              {status.label}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100 hover:bg-muted/80 hover:text-foreground dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                  aria-label="Exam actions"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/70 bg-card/95 dark:border-slate-700 dark:bg-slate-900/95">
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800">
+                  <Link href={`/exam/${exam.id}`}>
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Start exam
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border/50 dark:bg-slate-700" />
+                <DropdownMenuItem className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800 text-muted-foreground dark:text-slate-400">
+                  <FileText className="mr-2 h-4 w-4" />
+                  View details
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-3xl border border-border/70 bg-muted/50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground dark:text-slate-400">Duration</p>
+            <p className="mt-3 text-lg font-semibold text-foreground dark:text-slate-100">{exam.duration} min</p>
+          </div>
+          <div className="rounded-3xl border border-border/70 bg-muted/50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground dark:text-slate-400">Questions</p>
+            <p className="mt-3 text-lg font-semibold text-foreground dark:text-slate-100">{exam.question_count}</p>
+          </div>
+        </div>
+
+        <div className="mt-auto">
+          <Button
+            asChild
+            className="h-11 w-full rounded-2xl bg-slate-950 text-white transition duration-200 hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
+          >
+            <Link href={`/exam/${exam.id}`}>Start exam</Link>
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -459,7 +601,7 @@ function StudentDashboardView({ user }) {
   const [fetchingExams, setFetchingExams] = useState(true);
   const [error, setError] = useState('');
   const [summary, setSummary] = useState({
-    upcomingExams: 0,
+    availableExams: 0,
     completedExams: 0,
     violations: 0,
     averageScore: 'N/A',
@@ -480,14 +622,6 @@ function StudentDashboardView({ user }) {
 
         const availableExams = data.exams || [];
         setExams(availableExams);
-
-        const now = new Date();
-        const upcomingExams = availableExams.filter((exam) => {
-          if (!exam.start_time) {
-            return true;
-          }
-          return new Date(exam.start_time) > now;
-        }).length;
 
         const [{ data: attempts, error: attemptsError }, { count: violationsCount, error: logsError }] =
           await Promise.all([
@@ -521,7 +655,7 @@ function StudentDashboardView({ user }) {
           : 'N/A';
 
         setSummary({
-          upcomingExams,
+          availableExams: availableExams.length,
           completedExams,
           violations: violationsCount || 0,
           averageScore,
@@ -534,77 +668,96 @@ function StudentDashboardView({ user }) {
     };
 
     fetchAvailableExams();
-  }, []);
+  }, [user.id]);
 
   return (
     <PortalShell
-      title={`Welcome, ${user.name}`}
-      description="Review upcoming assessments, track your performance, and launch exams from a clean secure workspace."
+      title={`Welcome back, ${user.name}`}
+      description="Your published exams are ready to launch."
       showThemeToggle={true}
       contentClassName="mx-auto max-w-7xl"
     >
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard icon={Clock3} label="Upcoming Exams" value={summary.upcomingExams} tone="indigo" />
-        <SummaryCard icon={CheckCircle2} label="Completed Exams" value={summary.completedExams} tone="emerald" />
-        <SummaryCard icon={AlertTriangle} label="Violations / Warnings" value={summary.violations} tone="amber" />
-        <SummaryCard icon={LineChart} label="Average Score" value={summary.averageScore} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StudentStatCard icon={BookOpen} label="Available exams" value={summary.availableExams} tone="indigo" />
+        <StudentStatCard icon={CheckCircle2} label="Completed" value={summary.completedExams} tone="emerald" />
+        <StudentStatCard icon={AlertTriangle} label="Warnings" value={summary.violations} tone="amber" />
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-foreground">Available Exams</h2>
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          Select a published exam below when you&apos;re ready to begin. Timers and anti-cheat checks start immediately after launch.
-        </p>
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">Available exams</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Launch your active assessments with a single tap.
+          </p>
+        </div>
       </div>
 
       {fetchingExams ? (
-        <Card className="border-border/80 bg-card/90 shadow-sm">
-          <CardContent className="py-12 text-center">
+        <Card className="mt-6 border-border/70 bg-card/90 shadow-sm">
+          <CardContent className="py-14 text-center">
             <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
-            <p className="mt-4 text-muted-foreground">Loading exams...</p>
+            <p className="mt-4 text-sm text-muted-foreground">Loading available exams…</p>
           </CardContent>
         </Card>
       ) : error ? (
-        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
+        <Alert className="mt-6 border-destructive/30 bg-destructive/10 text-destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Unable to load exams</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : exams.length === 0 ? (
-        <Card className="border-dashed border-border bg-card/70">
-          <CardContent className="py-12 text-center">
-            <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="text-muted-foreground">No published exams are available right now.</p>
-          </CardContent>
+        <Card className="mt-6 rounded-3xl border-border/70 bg-card/90 p-10 text-center shadow-sm">
+          <BookOpen className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h3 className="mt-6 text-xl font-semibold text-foreground">No exams are available</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Your instructor hasn&apos;t published any exams yet. Check back soon.
+          </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {exams.map((exam) => (
-            <Card
-              key={exam.id}
-              className="border-border/80 bg-card/90 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-            >
-              <CardHeader>
-                <CardTitle className="text-lg">{exam.title}</CardTitle>
-                <CardDescription>By {exam.lecturer?.name || 'Unknown'}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4 space-y-2">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock3 className="mr-2 h-4 w-4" />
-                    Duration: {exam.duration} minutes
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {exams.map((exam) => {
+            const status = getStudentExamStatus(exam);
+
+            return (
+              <article
+                key={exam.id}
+                className="group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(15,23,42,0.3)]"
+              >
+                <div className="flex items-start justify-between gap-4 p-6">
+                  <div className="min-w-0 space-y-2">
+                    <h3 className="truncate text-lg font-semibold text-foreground">{exam.title}</h3>
+                    <p className="text-sm text-muted-foreground">By {exam.lecturer?.name || 'Unknown'}</p>
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Questions: {exam.question_count}
-                  </div>
+
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${status.className}`}
+                  >
+                    {status.label}
+                  </span>
                 </div>
-                <Button asChild className="w-full">
-                  <Link href={`/exam/${exam.id}`}>Start Exam</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+
+                <div className="mt-auto space-y-4 border-t border-border/70 p-6 pt-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
+                      <Clock3 className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground/90">{exam.duration} min</span>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
+                      <BookOpen className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground/90">{exam.question_count || 0} questions</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    asChild
+                    className="h-11 w-full rounded-full text-sm font-semibold shadow-sm transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    <Link href={`/exam/${exam.id}`}>{status.label === 'Closed' ? 'View exam' : 'Start exam'}</Link>
+                  </Button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </PortalShell>
