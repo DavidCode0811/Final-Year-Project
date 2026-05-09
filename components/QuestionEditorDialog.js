@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 import {
@@ -40,22 +40,103 @@ export default function QuestionEditorDialog({
   onSubmit,
   onDraftChange,
   submitting = false,
+  draftKey = 'default',
 }) {
+  const saveTimeoutRef = useRef(null);
   const [formValues, setFormValues] = useState(initialValues);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [draftSavedAt, setDraftSavedAt] = useState(null);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  const STORAGE_KEY = `exam-question-draft-${draftKey}`;
 
   useEffect(() => {
-    if (open) {
-      setFormValues(initialValues);
-      setFieldErrors({});
+    if (!open) {
+      return;
     }
-  }, [initialValues, open]);
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY);
+
+      if (!stored) {
+        setFormValues(initialValues);
+        setFieldErrors({});
+        return;
+      }
+
+      const parsed = JSON.parse(stored);
+
+      if (parsed?.formValues) {
+        setFormValues(parsed.formValues);
+        setDraftSavedAt(parsed.savedAt || null);
+        setDraftRestored(true);
+      } else {
+        setFormValues(initialValues);
+      }
+    } catch {
+      setFormValues(initialValues);
+    }
+
+    setFieldErrors({});
+  }, [open, STORAGE_KEY, initialValues]);
 
   useEffect(() => {
     if (open) {
       onDraftChange?.(formValues);
     }
   }, [formValues, onDraftChange, open]);
+
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = window.setTimeout(() => {
+      try {
+        const draftPayload = {
+          formValues,
+          savedAt: new Date().toISOString(),
+        };
+
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draftPayload));
+        setDraftSavedAt(draftPayload.savedAt);
+      } catch (error) {
+        console.error('Unable to save question draft:', error);
+      }
+    }, 600);
+
+    return () => {
+      clearTimeout(saveTimeoutRef.current);
+    };
+  }, [formValues, open, STORAGE_KEY]);
+
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event) => {
+      if (!draftRestored && !formValues.questionText && !formValues.options?.some(Boolean)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = '';
+      return '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [draftRestored, formValues, open]);
 
   const availableAnswerOptions = useMemo(
     () =>
@@ -115,7 +196,16 @@ export default function QuestionEditorDialog({
     }
 
     setFieldErrors({});
-    await onSubmit(formValues);
+
+    try {
+      await onSubmit(formValues);
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch (submitError) {
+      throw submitError;
+    }
   };
 
   return (
@@ -128,6 +218,13 @@ export default function QuestionEditorDialog({
           <DialogDescription className="text-sm leading-6 text-muted-foreground">
             Capture the prompt, answer choices, scoring weight, and display order for this exam question.
           </DialogDescription>
+          {(draftRestored || draftSavedAt) && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+              {draftRestored
+                ? `Restored draft${draftSavedAt ? ` from ${new Date(draftSavedAt).toLocaleTimeString()}` : ''}.`
+                : `Draft saved ${draftSavedAt ? new Date(draftSavedAt).toLocaleTimeString() : 'just now'}.`}
+            </div>
+          )}
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={handleSubmit}>

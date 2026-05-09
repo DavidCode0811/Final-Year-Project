@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Clock3, FileText, Loader2, RadioTower } from 'lucide-react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -11,6 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { defaultExamFormValues, validateExamInput } from '@/lib/lecturer-exams';
+
+const DRAFT_STORAGE_KEY = 'lecturer-exam-draft-v1';
+const AUTO_SAVE_DELAY_MS = 750;
 
 function FieldError({ message }) {
   if (!message) {
@@ -51,18 +54,125 @@ export default function LecturerExamForm({
   submitting = false,
   error = '',
 }) {
-  const [formValues, setFormValues] = useState({
-    ...defaultExamFormValues,
-    ...initialValues,
-  });
-  const [fieldErrors, setFieldErrors] = useState({});
-
-  useEffect(() => {
-    setFormValues({
+  const initialFormState = useMemo(
+    () => ({
       ...defaultExamFormValues,
       ...initialValues,
-    });
-  }, [initialValues]);
+    }),
+    [initialValues]
+  );
+
+  const [formValues, setFormValues] = useState(initialFormState);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [saveState, setSaveState] = useState({ status: 'idle', lastSavedAt: null });
+  const [draftRestored, setDraftRestored] = useState(false);
+  const saveTimeoutRef = useRef(null);
+
+  const isDirty = useMemo(
+    () => JSON.stringify(formValues) !== JSON.stringify(initialFormState),
+    [formValues, initialFormState]
+  );
+
+  useEffect(() => {
+    setFormValues(initialFormState);
+  }, [initialFormState]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const saved = window.localStorage.getItem(DRAFT_STORAGE_KEY);
+
+      if (!saved) {
+        return;
+      }
+
+      const parsed = JSON.parse(saved);
+
+      if (parsed?.formValues) {
+        setFormValues({
+          ...initialFormState,
+          ...parsed.formValues,
+        });
+
+        setSaveState({
+          status: 'saved',
+          lastSavedAt: parsed.savedAt || null,
+        });
+        setDraftRestored(true);
+      }
+    } catch {
+      // Ignore invalid draft payloads.
+    }
+  }, [initialFormState]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const handleBeforeUnload = (event) => {
+      if (!isDirty) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = '';
+      return '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = window.setTimeout(() => {
+      try {
+        const draftPayload = {
+          formValues,
+          savedAt: new Date().toISOString(),
+        };
+
+        window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftPayload));
+
+        setSaveState({
+          status: 'saved',
+          lastSavedAt: draftPayload.savedAt,
+        });
+      } catch (error) {
+        console.error('Unable to save exam draft:', error);
+        setSaveState((current) => ({
+          status: 'error',
+          lastSavedAt: current.lastSavedAt,
+        }));
+      }
+    }, AUTO_SAVE_DELAY_MS);
+
+    return () => {
+      clearTimeout(saveTimeoutRef.current);
+    };
+  }, [formValues]);
+
+  const clearDraft = () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.removeItem(DRAFT_STORAGE_KEY);
+    setSaveState({ status: 'idle', lastSavedAt: null });
+    setDraftRestored(false);
+  };
 
   const updateField = (field, value) => {
     setFormValues((current) => ({
@@ -93,7 +203,13 @@ export default function LecturerExamForm({
     }
 
     setFieldErrors({});
-    await onSubmit(formValues);
+
+    try {
+      await onSubmit(formValues);
+      clearDraft();
+    } catch (submitError) {
+      throw submitError;
+    }
   };
 
   return (
@@ -109,6 +225,17 @@ export default function LecturerExamForm({
               Define the assessment shell with a clear title, timing window, and publication
               status. You can move into question authoring right after this step.
             </CardDescription>
+            {draftRestored || saveState.status !== 'idle' ? (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+                {draftRestored
+                  ? `Draft restored${saveState.lastSavedAt ? ` from ${new Date(saveState.lastSavedAt).toLocaleString()}` : ''}.`
+                  : saveState.status === 'saving'
+                  ? 'Saving draft…'
+                  : saveState.status === 'saved'
+                  ? `Draft saved ${saveState.lastSavedAt ? new Date(saveState.lastSavedAt).toLocaleTimeString() : ''}`
+                  : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 xl:w-[340px] xl:grid-cols-1">

@@ -350,6 +350,7 @@ function LecturerDashboardView({ user }) {
       <PortalShell
         title="Lecturer dashboard"
         description="Create assessments, publish when ready, and review cohort performance."
+        showThemeToggle={true}
         actions={
           <Button asChild size="sm" className="rounded-full px-4 shadow-sm">
             <Link href="/create-exam">
@@ -539,6 +540,7 @@ function StudentDashboardView({ user }) {
     <PortalShell
       title={`Welcome, ${user.name}`}
       description="Review upcoming assessments, track your performance, and launch exams from a clean secure workspace."
+      showThemeToggle={true}
       contentClassName="mx-auto max-w-7xl"
     >
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

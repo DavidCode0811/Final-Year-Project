@@ -207,7 +207,7 @@ export default function PortalShell({
   actions,
   children,
   contentClassName,
-  showThemeToggle = true,
+  showThemeToggle = false,
 }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();

@@ -6,9 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import {
   AlertCircle,
   ArrowLeft,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
   FileText,
   ListOrdered,
   Pencil,
@@ -254,6 +252,7 @@ export default function ExamQuestionsPage() {
       <PortalShell
         title={exam?.title ? `${exam.title} Questions` : 'Question Management'}
         description="Create, update, and organize the question set for this exam."
+        showThemeToggle={false}
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <Button asChild variant="outline" className="border-slate-300 bg-white/80">
@@ -321,8 +320,8 @@ export default function ExamQuestionsPage() {
               />
             </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div className="space-y-6">
+            <div className="mt-8 flex justify-center">
+              <div className="space-y-6 w-full max-w-4xl">
                 {questions.length === 0 ? (
                   <Card className="border-dashed border-slate-300 bg-white/75">
                     <CardContent className="py-16 text-center">
@@ -443,51 +442,6 @@ export default function ExamQuestionsPage() {
                 )}
               </div>
 
-              <Card className="border-slate-200 bg-white/85 shadow-sm">
-                <CardContent className="space-y-5 p-6">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">
-                      Exam Summary
-                    </p>
-                    <h2 className="mt-2 text-lg font-semibold text-slate-950">
-                      Question set overview
-                    </h2>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Use this page to keep the exam question order intentional and the scoring weight consistent.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4 text-sm text-slate-600">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <Clock3 className="mt-0.5 h-4 w-4 text-slate-700" />
-                        <div>
-                          <p className="font-medium text-slate-950">Duration</p>
-                          <p className="mt-1">{exam?.duration} minutes</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <CalendarDays className="mt-0.5 h-4 w-4 text-slate-700" />
-                        <div>
-                          <p className="font-medium text-slate-950">Schedule</p>
-                          <p className="mt-1">Starts {formatDateTime(exam?.start_time)}</p>
-                          <p className="mt-1">Ends {formatDateTime(exam?.end_time)}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="font-medium text-slate-950">Description</p>
-                      <p className="mt-2 whitespace-pre-wrap leading-6">
-                        {exam?.description || 'No description provided.'}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </>
         )}
@@ -498,6 +452,7 @@ export default function ExamQuestionsPage() {
         onOpenChange={setEditorOpen}
         mode={editorMode}
         initialValues={editorValues}
+        draftKey={`${examId}-${editorMode}-${editingQuestionId ?? 'new'}`}
         onSubmit={handleSaveQuestion}
         submitting={savingQuestion}
       />
