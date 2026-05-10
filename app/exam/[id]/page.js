@@ -2,15 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
+  Clock,
+  FileText,
   Loader2,
   Save,
   Send,
   ShieldCheck,
+  TrendingUp,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -215,8 +219,6 @@ export default function StudentExamPage() {
   }, [currentQuestionIndex, examId, hasStarted]);
 
   const totalQuestions = exam?.questions?.length || 0;
-  const answeredCount = useMemo(() => countAnsweredQuestions(answers), [answers]);
-  const progressValue = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
   const currentQuestion = exam?.questions?.[currentQuestionIndex] || null;
   const hasExistingAttempt = Boolean(attempt && attempt.status === 'in_progress');
 
@@ -351,7 +353,6 @@ export default function StudentExamPage() {
     remainingSeconds,
     violationCount,
     tabSwitchCount,
-    inactivitySeconds,
     warning,
     dismissWarning,
     isOffline,
@@ -613,81 +614,78 @@ export default function StudentExamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(51,65,85,0.3),_transparent_32%),linear-gradient(180deg,_#020617_0%,_#0f172a_100%)]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       <ExamTimer
         remainingSeconds={remainingSeconds}
         violationCount={violationCount}
         tabSwitchCount={tabSwitchCount}
-        inactivitySeconds={inactivitySeconds}
         isOffline={isOffline}
       />
 
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:px-6">
-        <aside className="lg:w-80 lg:flex-shrink-0">
-          <Card className="border-slate-200 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/85 lg:sticky lg:top-6">
-            <CardHeader className="space-y-3">
-              <div className="flex items-start justify-between gap-3">
+      <div className="mx-auto flex max-w-7xl gap-8 px-6 py-8">
+        <aside className="w-full lg:w-80 lg:flex-shrink-0">
+          <motion.div
+            className="sticky top-8 space-y-6"
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+          >
+            <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
+                  <FileText className="h-5 w-5" />
+                </div>
                 <div>
-                  <CardTitle className="text-xl text-slate-950 dark:text-slate-100">{exam.title}</CardTitle>
-                  <CardDescription className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Answer one question at a time. Your progress is being autosaved.
-                  </CardDescription>
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Exam overview</p>
+                  <h2 className="mt-2 text-lg font-semibold text-slate-100">{exam.title}</h2>
                 </div>
               </div>
-              <SaveIndicator saveState={saveState} />
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div>
-                <div className="mb-2 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-                  <span>Answered</span>
-                  <span>
-                    {answeredCount} / {totalQuestions}
-                  </span>
+              <div className="space-y-3 text-sm text-slate-400">
+                <p>Question {currentQuestionIndex + 1} of {totalQuestions}</p>
+                <p className="text-slate-400">Answers are auto-saved as you work.</p>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
+                  <span className="text-sm font-semibold">Q</span>
+                </span>
+                <h3 className="text-sm font-semibold text-slate-200">Navigator</h3>
+              </div>
+              <ScrollArea className="max-h-64 pr-2">
+                <div className="grid grid-cols-6 gap-2">
+                  {exam.questions?.map((question, index) => {
+                    const isCurrent = index === currentQuestionIndex;
+                    const isAnswered = Boolean(answers[question.id]);
+
+                    return (
+                      <motion.button
+                        key={question.id}
+                        type="button"
+                        className={`aspect-square rounded-2xl border text-sm font-semibold transition-all duration-200 focus:outline-none ${
+                          isCurrent
+                            ? 'border-blue-400 bg-blue-500 text-white shadow-[0_16px_50px_-30px_rgba(59,130,246,0.8)]'
+                            : isAnswered
+                              ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20'
+                              : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-700'
+                        }`}
+                        onClick={() => handleQuestionJump(index)}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {index + 1}
+                      </motion.button>
+                    );
+                  })}
                 </div>
-                <Progress value={progressValue} className="h-2 bg-slate-200" />
-              </div>
+              </ScrollArea>
+            </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-                <p className="font-medium text-slate-950 dark:text-slate-100">Exam Window</p>
-                <p className="mt-2">Starts {formatDateTime(exam.start_time)}</p>
-                <p className="mt-1">Ends {formatDateTime(exam.end_time)}</p>
-              </div>
-
-              <Separator />
-
-              <div>
-                <p className="text-sm font-medium text-slate-950 dark:text-slate-100">Questions</p>
-                <ScrollArea className="mt-3 max-h-[320px] pr-3">
-                  <div className="grid grid-cols-5 gap-2">
-                    {exam.questions?.map((question, index) => {
-                      const isCurrent = index === currentQuestionIndex;
-                      const isAnswered = Boolean(answers[question.id]);
-
-                      return (
-                        <Button
-                          key={question.id}
-                          type="button"
-                          variant="outline"
-                          className={
-                            isCurrent
-                              ? 'border-slate-950 bg-slate-950 text-white hover:bg-slate-900'
-                              : isAnswered
-                                ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'
-                          }
-                          onClick={() => handleQuestionJump(index)}
-                        >
-                          {index + 1}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </div>
-
+            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} className="rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-500 p-1 shadow-2xl">
               <Button
                 type="button"
-                className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                className="w-full bg-slate-950 text-white hover:bg-white/10 border-0 h-12"
                 onClick={handleSubmitExam}
                 disabled={submitting}
               >
@@ -703,73 +701,82 @@ export default function StudentExamPage() {
                   </>
                 )}
               </Button>
-            </CardContent>
-          </Card>
+            </motion.div>
+          </motion.div>
         </aside>
 
-        <main className="min-w-0 flex-1">
-          {currentQuestion ? (
-            <Card className="border-slate-200 bg-white/94 shadow-sm dark:border-slate-800 dark:bg-slate-950/90">
-              <CardHeader className="space-y-4">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900">
-                  <div className="mb-2 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
-                    <span>Overall progress</span>
-                    <span>{Math.round(progressValue)}%</span>
+        <main className="flex-1 min-w-0">
+          <AnimatePresence mode="wait">
+            {currentQuestion ? (
+              <motion.div
+                key={currentQuestion.id}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -24 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+                className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-8 shadow-2xl"
+              >
+                <div className="mb-8 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-800 text-slate-300">
+                      <CircleHelp className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Question</p>
+                      <h1 className="mt-2 text-3xl font-semibold text-slate-100 leading-tight">
+                        {currentQuestion.question_text}
+                      </h1>
+                    </div>
                   </div>
-                  <Progress value={progressValue} className="h-2 bg-slate-200 dark:bg-slate-800" />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-slate-600">
-                    <CircleHelp className="h-3.5 w-3.5" />
-                    Question {currentQuestionIndex + 1}
-                  </div>
-                  <div className="text-sm text-slate-500 dark:text-slate-400">
-                    {answeredCount} answered so far
-                  </div>
+
                 </div>
 
-                <div>
-                  <CardTitle className="text-2xl leading-9 text-slate-950 dark:text-slate-100">
-                    {currentQuestion.question_text}
-                  </CardTitle>
-                  <CardDescription className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Choose the best answer below. Your selection autosaves shortly after you click it.
-                  </CardDescription>
+                <div className="space-y-4">
+                  <RadioGroup
+                    value={answers[currentQuestion.id] || ''}
+                    onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
+                    className="space-y-3"
+                  >
+                    {currentQuestion.options?.map((option, index) => {
+                      const isSelected = answers[currentQuestion.id] === option;
+                      return (
+                        <motion.div
+                          key={`${currentQuestion.id}-${index}-${option}`}
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.25, delay: index * 0.05 }}
+                        >
+                          <Label
+                            htmlFor={`question-${currentQuestion.id}-option-${index}`}
+                            className={`flex cursor-pointer items-start gap-4 rounded-3xl border p-5 transition-all duration-200 ${
+                              isSelected
+                                ? 'border-blue-400 bg-blue-500/10 shadow-lg shadow-blue-500/10'
+                                : 'border-slate-800 bg-slate-950 hover:border-slate-700 hover:bg-slate-900'
+                            }`}
+                          >
+                            <RadioGroupItem
+                              id={`question-${currentQuestion.id}-option-${index}`}
+                              value={option}
+                              className="mt-1"
+                            />
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                                Option {String.fromCharCode(65 + index)}
+                              </p>
+                              <p className="text-base leading-7 text-slate-100">{option}</p>
+                            </div>
+                          </Label>
+                        </motion.div>
+                      );
+                    })}
+                  </RadioGroup>
                 </div>
-              </CardHeader>
 
-              <CardContent className="space-y-8">
-                <RadioGroup
-                  value={answers[currentQuestion.id] || ''}
-                  onValueChange={(value) => handleAnswerChange(currentQuestion.id, value)}
-                  className="space-y-3"
-                >
-                  {currentQuestion.options?.map((option, index) => (
-                    <Label
-                      key={`${currentQuestion.id}-${index}-${option}`}
-                      htmlFor={`question-${currentQuestion.id}-option-${index}`}
-                      className="flex cursor-pointer items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800"
-                    >
-                      <RadioGroupItem
-                        id={`question-${currentQuestion.id}-option-${index}`}
-                        value={option}
-                        className="mt-1"
-                      />
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                          Option {String.fromCharCode(65 + index)}
-                        </p>
-                        <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">{option}</p>
-                      </div>
-                    </Label>
-                  ))}
-                </RadioGroup>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6">
+                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-950/70 p-5">
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-slate-300 bg-white"
+                    className="border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600 hover:bg-slate-800"
                     onClick={handlePrevious}
                     disabled={currentQuestionIndex === 0}
                   >
@@ -777,14 +784,14 @@ export default function StudentExamPage() {
                     Previous
                   </Button>
 
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm text-slate-400">
                     Question {currentQuestionIndex + 1} of {totalQuestions}
                   </div>
 
                   {currentQuestionIndex === totalQuestions - 1 ? (
                     <Button
                       type="button"
-                      className="bg-emerald-600 text-white hover:bg-emerald-700"
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
                       onClick={handleSubmitExam}
                       disabled={submitting}
                     >
@@ -803,7 +810,7 @@ export default function StudentExamPage() {
                   ) : (
                     <Button
                       type="button"
-                      className="bg-slate-950 text-white hover:bg-slate-800"
+                      className="bg-slate-700 text-slate-100 hover:bg-slate-600"
                       onClick={handleNext}
                     >
                       Next
@@ -811,16 +818,19 @@ export default function StudentExamPage() {
                     </Button>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-slate-200 bg-white/94 shadow-sm">
-              <CardContent className="py-16 text-center">
-                <CircleHelp className="mx-auto h-12 w-12 text-slate-400" />
-                <p className="mt-4 text-slate-600">No questions are available for this exam.</p>
-              </CardContent>
-            </Card>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="rounded-3xl bg-slate-900/80 border border-slate-800/70 p-16 text-center shadow-2xl"
+              >
+                <CircleHelp className="mx-auto h-16 w-16 text-slate-500" />
+                <h3 className="mt-4 text-2xl font-semibold text-slate-100">No questions are available</h3>
+                <p className="mt-2 text-slate-400">This exam doesn't have any questions yet.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 
