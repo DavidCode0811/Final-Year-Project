@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import QuestionEditorDialog from '@/components/QuestionEditorDialog';
 import PortalShell from '@/components/PortalShell';
+import { useMounted } from '@/hooks/use-mounted';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,6 +89,7 @@ function formatDateTime(value) {
 export default function ExamQuestionsPage() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
   const params = useParams();
   const examId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -107,18 +109,22 @@ export default function ExamQuestionsPage() {
   const [deletingQuestion, setDeletingQuestion] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!mounted || loading) {
+      return;
+    }
+
+    if (!user) {
       router.replace('/login');
       return;
     }
 
-    if (!loading && user && user.role !== 'lecturer') {
+    if (user.role !== 'lecturer') {
       router.replace('/dashboard');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
   const loadQuestions = async () => {
-    if (!examId || !user || !token) {
+    if (!mounted || !examId || !user || !token) {
       return;
     }
 
@@ -137,10 +143,10 @@ export default function ExamQuestionsPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'lecturer' && token && examId) {
+    if (mounted && user?.role === 'lecturer' && token && examId) {
       loadQuestions();
     }
-  }, [examId, token, user]);
+  }, [examId, mounted, token, user]);
 
   const totalMarks = useMemo(
     () => questions.reduce((total, question) => total + Number(question.marks || 0), 0),
@@ -235,7 +241,7 @@ export default function ExamQuestionsPage() {
     }
   };
 
-  if (loading || !user) {
+  if (!mounted || loading || !user) {
     return <FullScreenLoader message="Checking your workspace..." />;
   }
 

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GraduationCap } from 'lucide-react';
 import Link from 'next/link';
+import { useMounted } from '@/hooks/use-mounted';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -21,12 +22,13 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { user, signUp } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
 
   useEffect(() => {
-    if (user) {
+    if (mounted && user) {
       router.replace('/dashboard');
     }
-  }, [router, user]);
+  }, [mounted, router, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,8 +48,6 @@ export default function RegisterPage() {
         setSuccessMessage(
           'Account created. Check your email, verify your address, and you will be signed in with your Supabase account.'
         );
-      } else {
-        router.push('/dashboard');
       }
     } catch (err) {
       setError(err.message || 'Unable to create your account.');

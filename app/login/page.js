@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from '@/components/ui/label';
 import { GraduationCap } from 'lucide-react';
 import Link from 'next/link';
+import { useMounted } from '@/hooks/use-mounted';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,12 +18,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { user, signIn } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
 
   useEffect(() => {
-    if (user) {
+    if (mounted && user) {
       router.replace('/dashboard');
     }
-  }, [router, user]);
+  }, [mounted, router, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,7 +33,6 @@ export default function LoginPage() {
 
     try {
       await signIn({ email, password });
-      router.push('/dashboard');
     } catch (err) {
       setError(err.message || 'Unable to sign in. Please try again.');
     } finally {

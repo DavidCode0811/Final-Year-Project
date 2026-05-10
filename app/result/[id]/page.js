@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import PortalShell from '@/components/PortalShell';
 import { CircleCheck as CheckCircle2, Circle as XCircle } from 'lucide-react';
+import { useMounted } from '@/hooks/use-mounted';
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import { fetchStudentResult } from '@/lib/student-exam';
 export default function ResultPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
   const params = useParams();
   const examId = params.id;
 
@@ -28,22 +30,26 @@ export default function ResultPage() {
   const [fetchingResult, setFetchingResult] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (!mounted || loading) {
+      return;
+    }
+
+    if (!user) {
+      router.replace('/login');
       return;
     }
 
     if (user && examId) {
       fetchResult();
     }
-  }, [user, loading, examId, router]);
+  }, [user, loading, mounted, examId, router]);
 
   const fetchResult = async () => {
     try {
       const resultData = await fetchStudentResult(examId, user.id);
 
       if (!resultData) {
-        router.push('/dashboard');
+        router.replace('/dashboard');
         return;
       }
 
@@ -51,13 +57,13 @@ export default function ResultPage() {
       setResult(resultData);
     } catch (error) {
       console.error('Failed to fetch result:', error);
-      router.push('/dashboard');
+      router.replace('/dashboard');
     } finally {
       setFetchingResult(false);
     }
   };
 
-  if (loading || fetchingResult || !result) {
+  if (!mounted || loading || fetchingResult || !result) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

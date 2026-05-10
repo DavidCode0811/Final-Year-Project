@@ -27,6 +27,7 @@ import {
 
 import { useAuth } from '@/components/AuthProvider';
 import PortalShell from '@/components/PortalShell';
+import { useMounted } from '@/hooks/use-mounted';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -640,6 +641,7 @@ function exportStudentResult(row, totalPossibleScore) {
 export default function LecturerExamResultsPage() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
   const params = useParams();
   const examId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -657,19 +659,23 @@ export default function LecturerExamResultsPage() {
   const [modalState, setModalState] = useState({ open: false, row: null, mode: 'answers' });
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!mounted || loading) {
+      return;
+    }
+
+    if (!user) {
       router.replace('/login');
       return;
     }
 
-    if (!loading && user && !['lecturer', 'admin'].includes(user.role)) {
+    if (!['lecturer', 'admin'].includes(user.role)) {
       router.replace('/dashboard');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
   useEffect(() => {
     const loadResults = async () => {
-      if (!examId || !token || !user || !['lecturer', 'admin'].includes(user.role)) {
+      if (!mounted || !examId || !token || !user || !['lecturer', 'admin'].includes(user.role)) {
         return;
       }
 
@@ -698,7 +704,7 @@ export default function LecturerExamResultsPage() {
     };
 
     loadResults();
-  }, [examId, token, user]);
+  }, [examId, mounted, token, user]);
 
   useEffect(() => {
     setPage(1);
@@ -773,7 +779,7 @@ export default function LecturerExamResultsPage() {
     setModalState({ open: true, row, mode });
   };
 
-  if (loading || !user) {
+  if (!mounted || loading || !user) {
     return <FullScreenLoader message="Checking your workspace..." />;
   }
 

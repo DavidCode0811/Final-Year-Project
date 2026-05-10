@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import PortalShell from '@/components/PortalShell';
 import { useAuth } from '@/components/AuthProvider';
+import { useMounted } from '@/hooks/use-mounted';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,6 +55,7 @@ function StatusBanner({ state }) {
 export default function StudentProfilePage() {
   const { user, token, loading, refreshUser } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
 
   const [profile, setProfile] = useState(null);
   const [profileForm, setProfileForm] = useState({
@@ -100,18 +102,18 @@ export default function StudentProfilePage() {
   };
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (mounted && !loading && !user) {
       router.replace('/login');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
   useEffect(() => {
-    if (!loading && user && token) {
+    if (mounted && !loading && user && token) {
       void loadProfile();
     }
     // `loadProfile` intentionally uses the latest session token and user snapshot.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, token, user]);
+  }, [loading, mounted, token, user]);
 
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
@@ -205,7 +207,7 @@ export default function StudentProfilePage() {
     }
   };
 
-  if (loading || pageLoading || !user) {
+  if (!mounted || loading || pageLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">

@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthProvider';
 import { ExamTimer } from '@/components/ExamTimer';
 import { WarningModal } from '@/components/WarningModal';
+import { useMounted } from '@/hooks/use-mounted';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -104,6 +105,7 @@ function SaveIndicator({ saveState }) {
 export default function StudentExamPage() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
   const params = useParams();
   const examId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
@@ -126,15 +128,19 @@ export default function StudentExamPage() {
   const submissionLockRef = useRef(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!mounted || loading) {
+      return;
+    }
+
+    if (!user) {
       router.replace('/login');
       return;
     }
 
-    if (!loading && user && user.role !== 'student') {
+    if (user.role !== 'student') {
       router.replace('/dashboard');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
   useEffect(() => {
     return () => {
@@ -146,7 +152,7 @@ export default function StudentExamPage() {
     let active = true;
 
     const loadStudentExam = async () => {
-      if (!user || user.role !== 'student' || !token || !examId) {
+      if (!mounted || !user || user.role !== 'student' || !token || !examId) {
         return;
       }
 
@@ -210,7 +216,7 @@ export default function StudentExamPage() {
     return () => {
       active = false;
     };
-  }, [examId, loading, router, token, user]);
+  }, [examId, loading, mounted, router, token, user]);
 
   useEffect(() => {
     if (hasStarted && examId) {
@@ -433,7 +439,7 @@ export default function StudentExamPage() {
     });
   };
 
-  if (loading || !user) {
+  if (!mounted || loading || !user) {
     return <FullScreenLoader message="Checking your exam access..." />;
   }
 

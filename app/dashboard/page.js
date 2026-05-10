@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 
 import { useAuth } from '@/components/AuthProvider';
 import PortalShell from '@/components/PortalShell';
+import { useMounted } from '@/hooks/use-mounted';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   AlertDialog,
@@ -509,7 +510,7 @@ function LecturerDashboardView({ user }) {
           <SummaryCard icon={FileText} label="Drafts" value={draftCount} tone="amber" />
         </div>
 
-        <div className="mt-10 sm:mt-12">
+        <div id="manage-exams" className="mt-10 scroll-mt-24 sm:mt-12">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Your exams</h2>
           <p className="mt-1 max-w-xl text-sm text-muted-foreground">
             A minimal overview — open an exam for full schedule and settings.
@@ -683,7 +684,7 @@ function StudentDashboardView({ user }) {
         <StudentStatCard icon={AlertTriangle} label="Warnings" value={summary.violations} tone="amber" />
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div id="exams" className="mt-8 flex scroll-mt-24 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">Available exams</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
@@ -767,14 +768,15 @@ function StudentDashboardView({ user }) {
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (mounted && !loading && !user) {
       router.replace('/login');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
-  if (loading || !user) {
+  if (!mounted || loading || !user) {
     return <FullScreenLoader message="Loading your dashboard..." />;
   }
 

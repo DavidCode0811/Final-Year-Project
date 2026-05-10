@@ -8,6 +8,7 @@ import { useAuth } from '@/components/AuthProvider';
 import LecturerExamForm from '@/components/LecturerExamForm';
 import PortalShell from '@/components/PortalShell';
 import { Card, CardContent } from '@/components/ui/card';
+import { useMounted } from '@/hooks/use-mounted';
 import { createLecturerExam } from '@/lib/lecturer-exams';
 
 function LoadingScreen({ message }) {
@@ -24,19 +25,24 @@ function LoadingScreen({ message }) {
 export default function CreateExamPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const mounted = useMounted();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!mounted || loading) {
+      return;
+    }
+
+    if (!user) {
       router.replace('/login');
       return;
     }
 
-    if (!loading && user && user.role !== 'lecturer') {
+    if (user.role !== 'lecturer') {
       router.replace('/dashboard');
     }
-  }, [loading, router, user]);
+  }, [loading, mounted, router, user]);
 
   const handleCreateExam = async (values) => {
     setSubmitError('');
@@ -52,7 +58,7 @@ export default function CreateExamPage() {
     }
   };
 
-  if (loading || !user) {
+  if (!mounted || loading || !user) {
     return <LoadingScreen message="Checking your workspace..." />;
   }
 
