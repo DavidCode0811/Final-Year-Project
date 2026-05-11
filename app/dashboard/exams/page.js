@@ -402,7 +402,7 @@ export default function StudentExamsPage() {
     <PortalShell
       title="Exams"
       description="Track available assessments, completed work, scores, and missed exam windows."
-      showThemeToggle
+      showThemeToggle={false}
       contentClassName="mx-auto max-w-7xl"
     >
       <div className="grid gap-3 md:grid-cols-3">

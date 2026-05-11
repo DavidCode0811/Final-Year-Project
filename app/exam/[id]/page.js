@@ -772,10 +772,10 @@ export default function StudentExamPage() {
               </ScrollArea>
             </div>
 
-            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} className="rounded-3xl bg-gradient-to-r from-emerald-500 to-teal-500 p-1 shadow-2xl">
+            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
               <Button
                 type="button"
-                className="w-full bg-slate-950 text-white hover:bg-white/10 border-0 h-12"
+                className="w-full bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700/50 h-11 rounded-2xl font-semibold shadow-lg shadow-slate-950/20 transition-all duration-200 hover:shadow-xl hover:shadow-slate-950/30"
                 onClick={handleSubmitExam}
                 disabled={submitting}
               >
