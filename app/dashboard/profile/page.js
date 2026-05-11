@@ -52,7 +52,7 @@ function StatusBanner({ state }) {
   );
 }
 
-export default function StudentProfilePage() {
+export default function ProfilePage() {
   const { user, token, loading, refreshUser } = useAuth();
   const router = useRouter();
   const mounted = useMounted();
@@ -218,7 +218,8 @@ export default function StudentProfilePage() {
     );
   }
 
-  const studentProfile = profile || user;
+  const profileData = profile || user;
+  const accountLabel = profileData?.role === 'lecturer' ? 'Lecturer Account' : 'Student Account';
 
   return (
     <PortalShell
@@ -231,7 +232,7 @@ export default function StudentProfilePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <UserRound className="h-5 w-5" />
-              Student Information
+              Account Information
             </CardTitle>
             <CardDescription>Core account details used across exams and reports.</CardDescription>
           </CardHeader>
@@ -243,10 +244,10 @@ export default function StudentProfilePage() {
             ) : null}
             <ReadOnlyField
               label="Account Role"
-              value={studentProfile?.role ? studentProfile.role.toUpperCase() : 'STUDENT'}
+              value={profileData?.role ? profileData.role.toUpperCase() : 'STUDENT'}
             />
-            <ReadOnlyField label="Last Known Name" value={studentProfile?.name} />
-            <ReadOnlyField label="Last Known Email" value={studentProfile?.email} />
+            <ReadOnlyField label="Last Known Name" value={profileData?.name} />
+            <ReadOnlyField label="Last Known Email" value={profileData?.email} />
           </CardContent>
         </Card>
 
