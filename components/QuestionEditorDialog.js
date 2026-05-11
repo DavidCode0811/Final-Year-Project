@@ -210,7 +210,7 @@ export default function QuestionEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto border-border bg-card sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-border/80 bg-card shadow-2xl shadow-slate-950/10 sm:max-w-2xl dark:bg-card/95 dark:shadow-black/35">
         <DialogHeader>
           <DialogTitle className="text-foreground">
             {mode === 'edit' ? 'Edit Question' : 'Add Question'}
@@ -219,7 +219,7 @@ export default function QuestionEditorDialog({
             Capture the prompt, answer choices, scoring weight, and display order for this exam question.
           </DialogDescription>
           {(draftRestored || draftSavedAt) && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-100">
               {draftRestored
                 ? `Restored draft${draftSavedAt ? ` from ${new Date(draftSavedAt).toLocaleTimeString()}` : ''}.`
                 : `Draft saved ${draftSavedAt ? new Date(draftSavedAt).toLocaleTimeString() : 'just now'}.`}
@@ -248,7 +248,7 @@ export default function QuestionEditorDialog({
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 rounded-2xl border border-border/70 bg-muted/25 p-4 sm:grid-cols-2 dark:bg-muted/15">
               {QUESTION_OPTION_LABELS.map((label, index) => (
                 <div key={label} className="space-y-2">
                   <Label htmlFor={`option-${label}`}>Option {label}</Label>
@@ -271,7 +271,7 @@ export default function QuestionEditorDialog({
                 value={formValues.correctAnswer || undefined}
                 onValueChange={(value) => updateField('correctAnswer', value)}
               >
-                <SelectTrigger id="correct-answer">
+                <SelectTrigger id="correct-answer" className="border-input bg-background shadow-sm transition-colors hover:border-foreground/20 focus:ring-ring/25 dark:bg-muted/35">
                   <SelectValue placeholder="Select the correct option" />
                 </SelectTrigger>
                 <SelectContent>
@@ -316,7 +316,7 @@ export default function QuestionEditorDialog({
             <Button
               type="button"
               variant="outline"
-              className="bg-background"
+              className="bg-background/80 hover:bg-muted/70"
               onClick={() => onOpenChange(false)}
               disabled={submitting}
             >

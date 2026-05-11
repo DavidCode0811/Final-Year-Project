@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { defaultExamFormValues, validateExamInput } from '@/lib/lecturer-exams';
+import { cn } from '@/lib/utils';
 
 const DRAFT_STORAGE_KEY = 'lecturer-exam-draft-v1';
 const AUTO_SAVE_DELAY_MS = 750;
@@ -25,8 +26,8 @@ function FieldError({ message }) {
 
 function SetupHint({ icon: Icon, title, description }) {
   return (
-    <div className="flex min-w-0 gap-3 rounded-2xl border border-border/80 bg-muted/35 p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background text-foreground shadow-sm">
+    <div className="flex min-w-0 gap-3 rounded-2xl border border-border/80 bg-muted/30 p-4 shadow-sm shadow-slate-950/5 dark:bg-muted/25 dark:shadow-black/15">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-foreground shadow-sm">
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0">
@@ -213,8 +214,8 @@ export default function LecturerExamForm({
   };
 
   return (
-    <Card className="overflow-hidden border-border/80 bg-card/95 shadow-sm">
-      <CardHeader className="border-b border-border/70 bg-gradient-to-br from-background via-background to-muted/30 px-5 py-6 sm:px-6 lg:px-8">
+    <Card className="overflow-hidden border-border/80 bg-card/95 shadow-sm shadow-slate-950/5 dark:bg-card/90 dark:shadow-black/25">
+      <CardHeader className="border-b border-border/70 bg-gradient-to-br from-background via-background to-muted/30 px-5 py-6 sm:px-6 lg:px-8 dark:from-card dark:via-card dark:to-muted/25">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="max-w-2xl space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
@@ -226,7 +227,7 @@ export default function LecturerExamForm({
               status. You can move into question authoring right after this step.
             </CardDescription>
             {draftRestored || saveState.status !== 'idle' ? (
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-100">
                 {draftRestored
                   ? `Draft restored${saveState.lastSavedAt ? ` from ${new Date(saveState.lastSavedAt).toLocaleString()}` : ''}.`
                   : saveState.status === 'saving'
@@ -273,32 +274,38 @@ export default function LecturerExamForm({
               />
             </FormField>
 
-            <div className="min-w-0 rounded-3xl border border-border/80 bg-muted/35 p-4 sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-foreground">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-background shadow-sm">
-                      <RadioTower className="h-4 w-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <Label htmlFor="publish-toggle" className="text-sm font-semibold text-foreground">
-                        Publish exam
-                      </Label>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Turn this on only when students should be able to discover the exam.
-                      </p>
-                    </div>
+            <div className="min-w-0 rounded-2xl border border-border/70 bg-muted/25 p-3 shadow-sm shadow-slate-950/5 transition-colors dark:bg-muted/20 dark:shadow-black/15">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-background/80 text-foreground shadow-sm">
+                    <RadioTower className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <Label htmlFor="publish-toggle" className="text-sm font-semibold text-foreground">
+                      Publish exam
+                    </Label>
+                    <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
+                      Make this exam visible to students.
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex shrink-0 items-center justify-between rounded-2xl border border-border bg-background px-3 py-2 sm:min-w-[132px] sm:justify-center">
-                  <span className="text-sm font-medium text-foreground sm:hidden">
+                <div className="flex shrink-0 items-center gap-3 sm:pl-3">
+                  <span
+                    className={cn(
+                      'rounded-full border px-2.5 py-1 text-xs font-semibold transition-colors',
+                      formValues.isPublished
+                        ? 'border-emerald-300/70 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200'
+                        : 'border-border/80 bg-background/70 text-muted-foreground'
+                    )}
+                  >
                     {formValues.isPublished ? 'Published' : 'Draft'}
                   </span>
                   <Switch
                     id="publish-toggle"
                     checked={formValues.isPublished}
                     onCheckedChange={(checked) => updateField('isPublished', checked)}
+                    aria-label="Publish exam"
                   />
                 </div>
               </div>
@@ -331,9 +338,9 @@ export default function LecturerExamForm({
               </div>
             </FormField>
 
-            <div className="rounded-3xl border border-border/80 bg-muted/35 p-4 sm:p-5 lg:col-span-2">
+            <div className="rounded-3xl border border-border/80 bg-muted/30 p-4 sm:p-5 lg:col-span-2 dark:bg-muted/20">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="min-w-0 rounded-2xl border border-border bg-background p-4">
+                <div className="min-w-0 rounded-2xl border border-border/80 bg-background/75 p-4 shadow-sm shadow-slate-950/5 dark:bg-background/45 dark:shadow-black/15">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                     Access State
                   </p>
@@ -345,7 +352,7 @@ export default function LecturerExamForm({
                   </p>
                 </div>
 
-                <div className="min-w-0 rounded-2xl border border-border bg-background p-4">
+                <div className="min-w-0 rounded-2xl border border-border/80 bg-background/75 p-4 shadow-sm shadow-slate-950/5 dark:bg-background/45 dark:shadow-black/15">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                     Timing Rule
                   </p>
@@ -380,9 +387,9 @@ export default function LecturerExamForm({
             </FormField>
           </div>
 
-          <div className="rounded-3xl border border-amber-200/70 bg-amber-50/80 p-4 sm:p-5">
-            <p className="text-sm font-semibold text-amber-900">Scheduling note</p>
-            <p className="mt-2 text-sm leading-6 text-amber-900/90">
+          <div className="rounded-2xl border border-amber-200/70 bg-amber-50/80 p-4 sm:p-5 dark:border-amber-400/25 dark:bg-amber-400/10">
+            <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Scheduling note</p>
+            <p className="mt-2 text-sm leading-6 text-amber-900/90 dark:text-amber-100/85">
               Times are captured using the browser&apos;s local timezone and then stored in
               Supabase as UTC timestamps to keep delivery consistent across devices.
             </p>

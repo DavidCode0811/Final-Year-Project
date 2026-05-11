@@ -52,8 +52,8 @@ function FullScreenLoader({ message }) {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-slate-900" />
-        <p className="mt-4 text-gray-600">{message}</p>
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-500" />
+        <p className="mt-4 text-muted-foreground">{message}</p>
       </div>
     </div>
   );
@@ -61,14 +61,14 @@ function FullScreenLoader({ message }) {
 
 function StatCard({ icon: Icon, label, value }) {
   return (
-    <Card className="border-slate-200 bg-white/85 shadow-sm">
+    <Card className="border-border/70 bg-card/85 shadow-sm shadow-slate-950/5 backdrop-blur dark:bg-card/80 dark:shadow-black/20">
       <CardContent className="flex items-center gap-4 p-5">
-        <div className="rounded-2xl bg-slate-100 p-3 text-slate-700">
+        <div className="rounded-2xl border border-border/70 bg-muted/55 p-3 text-foreground shadow-sm">
           <Icon className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm text-slate-500">{label}</p>
-          <p className="text-2xl font-bold text-slate-950">{value}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -261,7 +261,7 @@ export default function ExamQuestionsPage() {
         showThemeToggle={false}
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <Button asChild variant="outline" className="border-slate-300 bg-white/80">
+            <Button asChild variant="outline" className="border-border/80 bg-background/70 shadow-sm hover:bg-muted/70">
               <Link href={`/dashboard/exams/${examId}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Exam
@@ -272,8 +272,8 @@ export default function ExamQuestionsPage() {
               variant={exam?.is_published ? 'outline' : 'default'}
               className={
                 exam?.is_published
-                  ? 'border-amber-300 bg-white text-amber-800 hover:bg-amber-50'
-                  : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  ? 'border-amber-300/70 bg-amber-50/80 text-amber-800 shadow-sm hover:bg-amber-100 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200 dark:hover:bg-amber-400/15'
+                  : 'bg-emerald-600 text-white shadow-sm shadow-emerald-950/20 hover:bg-emerald-700 dark:bg-emerald-500 dark:text-emerald-950 dark:hover:bg-emerald-400'
               }
               onClick={handlePublishToggle}
               disabled={publishingExam || !exam}
@@ -288,7 +288,7 @@ export default function ExamQuestionsPage() {
             </Button>
             <Button
               type="button"
-              className="bg-slate-950 text-white hover:bg-slate-800"
+              className="bg-slate-950 text-white shadow-sm shadow-slate-950/15 hover:bg-slate-800 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90"
               onClick={openCreateDialog}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -299,7 +299,7 @@ export default function ExamQuestionsPage() {
         contentClassName="mx-auto max-w-7xl"
       >
         {loadError ? (
-          <Alert className="border-rose-200 bg-rose-50 text-rose-900">
+          <Alert className="border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-400/30 dark:bg-rose-500/10 dark:text-rose-100">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Unable to load the question manager</AlertTitle>
             <AlertDescription className="flex flex-wrap items-center gap-3">
@@ -307,7 +307,7 @@ export default function ExamQuestionsPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="border-rose-300 bg-white text-rose-800 hover:bg-rose-100"
+                className="border-rose-300 bg-white text-rose-800 hover:bg-rose-100 dark:border-rose-400/40 dark:bg-rose-500/10 dark:text-rose-100 dark:hover:bg-rose-500/15"
                 onClick={loadQuestions}
               >
                 Try Again
@@ -327,18 +327,18 @@ export default function ExamQuestionsPage() {
             </div>
 
             <div className="mt-8 flex justify-center">
-              <div className="space-y-6 w-full max-w-4xl">
+              <div className="w-full max-w-4xl space-y-5">
                 {questions.length === 0 ? (
-                  <Card className="border-dashed border-slate-300 bg-white/75">
+                  <Card className="border-dashed border-border/80 bg-card/75 shadow-sm backdrop-blur dark:bg-card/70">
                     <CardContent className="py-16 text-center">
-                      <FileText className="mx-auto h-12 w-12 text-slate-400" />
-                      <h2 className="mt-4 text-lg font-semibold text-slate-950">No questions yet</h2>
-                      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
+                      <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <h2 className="mt-4 text-lg font-semibold text-foreground">No questions yet</h2>
+                      <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
                         Start building this exam by adding the first question in the modal.
                       </p>
                       <Button
                         type="button"
-                        className="mt-6 bg-slate-950 text-white hover:bg-slate-800"
+                        className="mt-6 bg-slate-950 text-white hover:bg-slate-800 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90"
                         onClick={openCreateDialog}
                       >
                         <Plus className="mr-2 h-4 w-4" />
@@ -348,34 +348,37 @@ export default function ExamQuestionsPage() {
                   </Card>
                 ) : (
                   questions.map((question, index) => (
-                    <Card key={question.id} className="border-slate-200 bg-white/90 shadow-sm">
-                      <CardHeader className="space-y-4">
+                    <Card
+                      key={question.id}
+                      className="group border-border/75 bg-card/90 shadow-sm shadow-slate-950/5 backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/18 hover:shadow-lg hover:shadow-slate-950/10 dark:bg-card/82 dark:shadow-black/20 dark:hover:border-emerald-400/25 dark:hover:shadow-black/30"
+                    >
+                      <CardHeader className="space-y-4 pb-4">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="space-y-3">
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge
                                 variant="outline"
-                                className="border-slate-300 bg-slate-50 text-slate-700"
+                                className="rounded-full border-border/80 bg-muted/45 px-2.5 py-0.5 text-muted-foreground"
                               >
                                 Question {index + 1}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="border-blue-200 bg-blue-50 text-blue-700"
+                                className="rounded-full border-cyan-300/50 bg-cyan-50/80 px-2.5 py-0.5 text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200"
                               >
                                 Order {question.order_index}
                               </Badge>
                               <Badge
                                 variant="outline"
-                                className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                className="rounded-full border-emerald-300/60 bg-emerald-50/80 px-2.5 py-0.5 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200"
                               >
                                 {question.marks} marks
                               </Badge>
                             </div>
-                            <CardTitle className="text-lg leading-7 text-slate-950">
+                            <CardTitle className="text-lg leading-7 text-foreground">
                               {question.question_text}
                             </CardTitle>
-                            <CardDescription>
+                            <CardDescription className="text-sm text-muted-foreground">
                               Correct answer: {question.correct_answer}
                             </CardDescription>
                           </div>
@@ -384,7 +387,7 @@ export default function ExamQuestionsPage() {
                             <Button
                               type="button"
                               variant="outline"
-                              className="border-slate-300 bg-white"
+                              className="border-border/80 bg-background/70 shadow-sm hover:bg-muted/70"
                               onClick={() => openEditDialog(question)}
                             >
                               <Pencil className="mr-2 h-4 w-4" />
@@ -393,7 +396,7 @@ export default function ExamQuestionsPage() {
                             <Button
                               type="button"
                               variant="outline"
-                              className="border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                              className="border-rose-200 bg-background/70 text-rose-700 shadow-sm hover:bg-rose-50 dark:border-rose-400/25 dark:bg-rose-500/5 dark:text-rose-200 dark:hover:bg-rose-500/10"
                               onClick={() => setQuestionPendingDelete(question)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -403,7 +406,7 @@ export default function ExamQuestionsPage() {
                         </div>
                       </CardHeader>
 
-                      <CardContent className="space-y-3">
+                      <CardContent className="space-y-3 pt-0">
                         {question.options?.map((option, optionIndex) => {
                           const isCorrect = option === question.correct_answer;
 
@@ -412,8 +415,8 @@ export default function ExamQuestionsPage() {
                               key={`${question.id}-${optionIndex}-${option}`}
                               className={`rounded-2xl border px-4 py-3 ${
                                 isCorrect
-                                  ? 'border-emerald-200 bg-emerald-50'
-                                  : 'border-slate-200 bg-slate-50'
+                                  ? 'border-emerald-300/60 bg-emerald-50/80 dark:border-emerald-400/25 dark:bg-emerald-400/10'
+                                  : 'border-border/70 bg-muted/35 dark:bg-muted/25'
                               }`}
                             >
                               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -421,19 +424,19 @@ export default function ExamQuestionsPage() {
                                   <div
                                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                                       isCorrect
-                                        ? 'bg-emerald-100 text-emerald-700'
-                                        : 'bg-white text-slate-600'
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200'
+                                        : 'bg-background text-muted-foreground shadow-sm dark:bg-background/70'
                                     }`}
                                   >
                                     Option {QUESTION_OPTION_LABELS[optionIndex] || optionIndex + 1}
                                   </div>
-                                  <p className="text-sm leading-6 text-slate-700">{option}</p>
+                                  <p className="text-sm leading-6 text-foreground/85">{option}</p>
                                 </div>
 
                                 {isCorrect ? (
                                   <Badge
                                     variant="outline"
-                                    className="border-emerald-600 bg-emerald-600 text-white"
+                                    className="rounded-full border-emerald-600 bg-emerald-600 text-white dark:border-emerald-400/30 dark:bg-emerald-400/15 dark:text-emerald-100"
                                   >
                                     Correct Answer
                                   </Badge>

@@ -52,11 +52,41 @@ import { useExamIntegrityMonitor } from '@/lib/use-exam-integrity-monitor';
 
 function FullScreenLoader({ message }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-slate-900" />
-        <p className="mt-4 text-slate-600">{message}</p>
+        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-emerald-500" />
+        <p className="mt-4 text-muted-foreground">{message}</p>
       </div>
+    </div>
+  );
+}
+
+function BriefingMetricCard({ icon: Icon, label, value, description }) {
+  return (
+    <Card className="border-border/75 bg-card/90 shadow-sm shadow-slate-950/5 backdrop-blur transition-all duration-200 hover:border-foreground/15 hover:shadow-lg hover:shadow-slate-950/10 dark:bg-card/80 dark:shadow-black/20 dark:hover:border-emerald-400/20 dark:hover:shadow-black/30">
+      <CardContent className="space-y-4 p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-muted/50 text-foreground shadow-sm">
+            <Icon className="h-4 w-4" />
+          </div>
+          <p className="rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+            {label}
+          </p>
+        </div>
+        <div>
+          <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BriefingRule({ children }) {
+  return (
+    <div className="flex gap-3 rounded-2xl border border-border/70 bg-muted/30 p-3 text-sm leading-6 text-foreground/80 dark:bg-muted/20">
+      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+      <span>{children}</span>
     </div>
   );
 }
@@ -453,17 +483,22 @@ export default function StudentExamPage() {
 
   if (loadError || !exam) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] p-4">
-        <Card className="w-full max-w-2xl border-rose-200 bg-white/95 shadow-xl">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-2xl border-rose-200 bg-card/95 shadow-xl shadow-slate-950/10 dark:border-rose-400/30 dark:shadow-black/30">
           <CardContent className="space-y-4 p-8 text-center">
             <AlertCircle className="mx-auto h-12 w-12 text-rose-500" />
             <div>
-              <h1 className="text-2xl font-semibold text-slate-950">Unable to load exam</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <h1 className="text-2xl font-semibold text-foreground">Unable to load exam</h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {loadError || 'Something went wrong while loading this exam.'}
               </p>
             </div>
-            <Button onClick={() => router.push('/dashboard')}>Return to Dashboard</Button>
+            <Button
+              onClick={() => router.push('/dashboard')}
+              className="rounded-xl bg-slate-950 px-4 shadow-sm shadow-slate-950/15 hover:bg-slate-800 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90"
+            >
+              Return to Dashboard
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -472,118 +507,176 @@ export default function StudentExamPage() {
 
   if (!hasStarted) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(148,163,184,0.14),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] p-4 sm:p-6">
-        <div className="mx-auto max-w-4xl space-y-6">
-          <Card className="overflow-hidden border-slate-200 bg-slate-950/95 text-white shadow-2xl shadow-slate-900/20">
-            <CardContent className="space-y-6 p-7">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="min-h-screen bg-background px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <div className="mx-auto max-w-5xl space-y-5 sm:space-y-6">
+          <Card className="overflow-hidden border-border/75 bg-card/95 shadow-2xl shadow-slate-950/10 backdrop-blur dark:bg-card/90 dark:shadow-black/30">
+            <CardContent className="p-5 sm:p-7">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                 <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/50 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Exam Brief
+                    Exam Briefing
                   </div>
                   <div>
-                    <h1 className="text-4xl font-semibold tracking-tight text-white">{exam.title}</h1>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                    <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                      {exam.title}
+                    </h1>
+                    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
                       {exam.description || 'Review the exam details below and start when you are ready.'}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:text-right">
-                  <div className="rounded-3xl bg-white/10 px-4 py-3 text-sm">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Status</p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                <div className="grid gap-3 sm:grid-cols-2 lg:w-[320px]">
+                  <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-3 text-sm dark:bg-muted/25">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Status</p>
+                    <p className="mt-2 text-base font-semibold text-foreground">
                       {availability.available ? 'Ready to start' : 'Unavailable'}
                     </p>
                   </div>
-                  <div className="rounded-3xl bg-white/10 px-4 py-3 text-sm">
-                    <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Questions</p>
-                    <p className="mt-2 text-lg font-semibold text-white">{exam.questions?.length || 0}</p>
+                  <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-3 text-sm dark:bg-muted/25">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Questions</p>
+                    <p className="mt-2 text-base font-semibold text-foreground">{exam.questions?.length || 0}</p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="border-slate-200 bg-white/95 shadow-lg">
-              <CardContent className="space-y-3 p-6">
-                <p className="text-sm font-semibold text-slate-950">Duration</p>
-                <p className="text-3xl font-semibold text-slate-950">{exam.duration} minutes</p>
-                <p className="text-sm text-slate-600">Complete the exam within the allotted time.</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-white/95 shadow-lg">
-              <CardContent className="space-y-3 p-6">
-                <p className="text-sm font-semibold text-slate-950">Exam window</p>
-                <p className="text-sm text-slate-600">Starts</p>
-                <p className="text-lg font-semibold text-slate-950">{formatDateTime(exam.start_time)}</p>
-                <p className="text-sm text-slate-600">Ends</p>
-                <p className="text-lg font-semibold text-slate-950">{formatDateTime(exam.end_time)}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-white/95 shadow-lg">
-              <CardContent className="space-y-3 p-6">
-                <p className="text-sm font-semibold text-slate-950">Exam readiness</p>
-                <p className="text-sm text-slate-600">Make sure you have a stable connection and enough time to finish.</p>
-                <div className="grid gap-2 pt-2 text-sm text-slate-700">
-                  <div className="rounded-2xl bg-slate-50 p-3">Review all questions before answering.</div>
-                  <div className="rounded-2xl bg-slate-50 p-3">Your progress is automatically saved.</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-slate-200 bg-white/95 shadow-lg">
-              <CardContent className="space-y-3 p-6">
-                <p className="text-sm font-semibold text-slate-950">Exam instructions</p>
-                <ul className="space-y-2 text-sm leading-6 text-slate-600">
-                  <li>One attempt is recorded for this exam.</li>
-                  <li>Your answers are autosaved to Supabase and localStorage.</li>
-                  <li>Refresh or network changes will not erase saved progress.</li>
-                </ul>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 md:grid-cols-3">
+            <BriefingMetricCard
+              icon={Clock}
+              label="Duration"
+              value={`${exam.duration} minutes`}
+              description="Complete the exam within the allotted time after starting."
+            />
+            <BriefingMetricCard
+              icon={FileText}
+              label="Questions"
+              value={exam.questions?.length || 0}
+              description="Review each question carefully before submitting."
+            />
+            <BriefingMetricCard
+              icon={TrendingUp}
+              label="Window"
+              value={availability.available ? 'Open' : 'Closed'}
+              description={`${formatDateTime(exam.start_time)} to ${formatDateTime(exam.end_time)}`}
+            />
           </div>
 
           {!availability.available ? (
-            <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 sm:px-6 sm:py-5">
-              <p className="font-semibold">Exam not yet available</p>
-              <p className="mt-2 text-amber-800">{availability.reason}</p>
+            <div className="rounded-2xl border border-amber-200/70 bg-amber-50/80 p-4 text-sm text-amber-900 shadow-sm shadow-amber-950/5 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-100 sm:px-5">
+              <div className="flex gap-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-semibold">Exam not yet available</p>
+                  <p className="mt-1 leading-6 text-amber-900/80 dark:text-amber-100/80">{availability.reason}</p>
+                </div>
+              </div>
             </div>
           ) : null}
 
           {(exam.questions?.length || 0) === 0 ? (
-            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-900 sm:px-6 sm:py-5">
-              <p className="font-semibold">No questions available</p>
-              <p className="mt-2 text-rose-800">This exam does not contain any questions yet, so it cannot be started.</p>
+            <div className="rounded-2xl border border-rose-200/80 bg-rose-50/80 p-4 text-sm text-rose-900 shadow-sm shadow-rose-950/5 dark:border-rose-400/25 dark:bg-rose-500/10 dark:text-rose-100 sm:px-5">
+              <div className="flex gap-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <p className="font-semibold">No questions available</p>
+                  <p className="mt-1 leading-6 text-rose-900/80 dark:text-rose-100/80">
+                    This exam does not contain any questions yet, so it cannot be started.
+                  </p>
+                </div>
+              </div>
             </div>
           ) : null}
 
-          <Card className="border-slate-200 bg-white/95 shadow-xl">
-            <CardContent className="space-y-6 p-6 sm:p-7">
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-slate-950">Ready when you are</p>
-                <p className="text-sm leading-6 text-slate-600">
-                  When you begin, your attempt will be created immediately and your work will be saved automatically.
-                </p>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <Card className="border-border/75 bg-card/90 shadow-sm shadow-slate-950/5 backdrop-blur dark:bg-card/80 dark:shadow-black/20">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-muted/45 text-foreground shadow-sm">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg text-foreground">Exam instructions</CardTitle>
+                    <CardDescription className="mt-1 text-sm leading-6 text-muted-foreground">
+                      Keep this focused and steady once you begin.
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-3 pt-0">
+                <BriefingRule>One attempt is recorded for this exam.</BriefingRule>
+                <BriefingRule>Your answers are autosaved in the browser and persisted to the server.</BriefingRule>
+                <BriefingRule>Refresh or network changes will not erase saved progress.</BriefingRule>
+                <BriefingRule>Review all answers before final submission.</BriefingRule>
+              </CardContent>
+            </Card>
+
+            <Card className="border-amber-200/70 bg-amber-50/75 shadow-sm shadow-amber-950/5 dark:border-amber-400/25 dark:bg-amber-400/10 dark:shadow-black/20">
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-amber-300/60 bg-amber-100/70 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-950 dark:text-amber-100">
+                      Integrity rules
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-amber-900/80 dark:text-amber-100/75">
+                      Sentinel monitors tab switching, focus loss, and suspicious inactivity during the attempt.
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-amber-200/70 bg-background/60 px-4 py-3 text-sm leading-6 text-amber-950/80 dark:border-amber-400/20 dark:bg-background/25 dark:text-amber-100/80">
+                  Repeated violations may trigger warnings or automatic submission. Stay on the exam page until you finish.
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="border-border/75 bg-card/90 shadow-xl shadow-slate-950/10 backdrop-blur dark:bg-card/90 dark:shadow-black/30">
+            <CardContent className="space-y-5 p-5 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1.5">
+                  <p className="text-sm font-semibold text-foreground">Ready when you are</p>
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Starting creates or resumes your attempt immediately. Your progress will autosave as you work.
+                  </p>
+                </div>
+                <div className="rounded-full border border-border/70 bg-muted/35 px-3 py-1 text-xs font-semibold text-muted-foreground dark:bg-muted/25">
+                  {hasExistingAttempt ? 'In progress' : 'Not started'}
+                </div>
               </div>
 
-              <div className="space-y-3 rounded-3xl bg-slate-50 p-5 text-sm text-slate-600">
-                <p className="font-semibold text-slate-950">What happens when you start</p>
-                <ul className="mt-3 space-y-2">
-                  <li>A new exam attempt is started or your in-progress attempt is resumed.</li>
-                  <li>Answers are autosaved in the browser and persisted to the server.</li>
-                  <li>You can refresh the page and continue where you left off.</li>
-                </ul>
+              <div className="grid gap-3 rounded-2xl border border-border/70 bg-muted/25 p-4 text-sm text-muted-foreground dark:bg-muted/15 sm:grid-cols-3">
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">Attempt</p>
+                  <p className="mt-1 leading-6">Created or resumed securely.</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">Autosave</p>
+                  <p className="mt-1 leading-6">Stored locally and remotely.</p>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">Recovery</p>
+                  <p className="mt-1 leading-6">Refresh-safe progress.</p>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button
                   type="button"
-                  className="bg-slate-950 text-white hover:bg-slate-800"
+                  variant="outline"
+                  className="h-10 rounded-xl border-border/80 bg-background/70 px-4 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted/70 focus-visible:ring-ring/30"
+                  onClick={() => router.push('/dashboard')}
+                >
+                  Back to Dashboard
+                </Button>
+
+                <Button
+                  type="button"
+                  className="h-10 rounded-xl bg-slate-950 px-5 text-white shadow-lg shadow-slate-950/15 transition-all hover:-translate-y-0.5 hover:bg-slate-800 focus-visible:ring-ring/30 dark:bg-emerald-400 dark:text-emerald-950 dark:shadow-emerald-950/25 dark:hover:bg-emerald-300 sm:min-w-[160px]"
                   onClick={handleStartExam}
                   disabled={
                     preparingAttempt ||
@@ -601,15 +694,6 @@ export default function StudentExamPage() {
                   ) : (
                     'Start Exam'
                   )}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-slate-300 bg-white"
-                  onClick={() => router.push('/dashboard')}
-                >
-                  Back to Dashboard
                 </Button>
               </div>
             </CardContent>
