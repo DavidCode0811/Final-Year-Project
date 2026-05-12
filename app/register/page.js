@@ -66,7 +66,7 @@ export default function RegisterPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Register with Supabase Auth and verify your email to get started</CardDescription>
+          <CardDescription className="text-sm sm:text-base">Enter your personal data to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -113,7 +113,7 @@ export default function RegisterPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Supabase Auth securely stores your password. Your profile row is created after verification.
+                Must be at least 8 characters.
               </p>
             </div>
             <div className="space-y-2">
