@@ -61,7 +61,7 @@ function FullScreenLoader({ message }) {
   );
 }
 
-function BriefingMetricCard({ icon: Icon, label, value, description }) {
+function BriefingMetricCard({ icon: Icon, label, value }) {
   return (
     <Card className="border-border/75 bg-card/90 shadow-sm shadow-slate-950/5 backdrop-blur transition-all duration-200 hover:border-foreground/15 hover:shadow-lg hover:shadow-slate-950/10 dark:bg-card/80 dark:shadow-black/20 dark:hover:border-emerald-400/20 dark:hover:shadow-black/30">
       <CardContent className="space-y-4 p-5">
@@ -75,7 +75,6 @@ function BriefingMetricCard({ icon: Icon, label, value, description }) {
         </div>
         <div>
           <p className="text-2xl font-semibold tracking-tight text-foreground">{value}</p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
         </div>
       </CardContent>
     </Card>
@@ -507,35 +506,30 @@ export default function StudentExamPage() {
 
   if (!hasStarted) {
     return (
-      <div className="min-h-screen bg-background px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+      <div className="min-h-screen bg-background px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
         <div className="mx-auto max-w-5xl space-y-5 sm:space-y-6">
-          <Card className="overflow-hidden border-border/75 bg-card/95 shadow-2xl shadow-slate-950/10 backdrop-blur dark:bg-card/90 dark:shadow-black/30">
-            <CardContent className="p-5 sm:p-7">
-              <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/50 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200">
+          <Card className="overflow-hidden border-border/65 bg-card/58 shadow-[0_18px_54px_-38px_hsl(var(--foreground)/0.5)] backdrop-blur-2xl dark:bg-card/45">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="min-w-0 space-y-2">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:border-emerald-400/25 dark:text-emerald-200">
                     <ShieldCheck className="h-3.5 w-3.5" />
                     Exam Briefing
                   </div>
-                  <div>
-                    <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                      {exam.title}
-                    </h1>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                      {exam.description || 'Review the exam details below and start when you are ready.'}
-                    </p>
-                  </div>
+                  <h1 className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                    {exam.title}
+                  </h1>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2 lg:w-[320px]">
-                  <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-3 text-sm dark:bg-muted/25">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Status</p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:w-[300px]">
+                  <div className="rounded-xl border border-border/60 bg-background/45 px-3 py-2 text-sm dark:bg-background/25">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Status</p>
                     <p className="mt-2 text-base font-semibold text-foreground">
                       {availability.available ? 'Ready to start' : 'Unavailable'}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-border/70 bg-muted/35 px-4 py-3 text-sm dark:bg-muted/25">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Questions</p>
+                  <div className="rounded-xl border border-border/60 bg-background/45 px-3 py-2 text-sm dark:bg-background/25">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Questions</p>
                     <p className="mt-2 text-base font-semibold text-foreground">{exam.questions?.length || 0}</p>
                   </div>
                 </div>
@@ -548,19 +542,16 @@ export default function StudentExamPage() {
               icon={Clock}
               label="Duration"
               value={`${exam.duration} minutes`}
-              description="Complete the exam within the allotted time after starting."
             />
             <BriefingMetricCard
               icon={FileText}
               label="Questions"
               value={exam.questions?.length || 0}
-              description="Review each question carefully before submitting."
             />
             <BriefingMetricCard
               icon={TrendingUp}
               label="Window"
               value={availability.available ? 'Open' : 'Closed'}
-              description={`${formatDateTime(exam.start_time)} to ${formatDateTime(exam.end_time)}`}
             />
           </div>
 

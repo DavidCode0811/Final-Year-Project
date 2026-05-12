@@ -45,7 +45,7 @@ export function ExamTimer({
       if (tabSwitchCount > 1) {
         toast.warning('⚠ Multiple tab switches detected');
       } else {
-        toast.warning('⚠ Tab switch detected');
+        toast.warning('Tab switch detected');
       }
 
       autoCollapseTimeoutRef.current = window.setTimeout(() => {

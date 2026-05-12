@@ -69,7 +69,6 @@ export default function CreateExamPage() {
   return (
     <PortalShell
       title="Create New Exam"
-      description="Set up a new assessment with a clear schedule, duration, and publication state."
       contentClassName="mx-auto max-w-7xl"
     >
       <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(320px,360px)]">

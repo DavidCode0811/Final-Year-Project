@@ -224,7 +224,6 @@ export default function ProfilePage() {
   return (
     <PortalShell
       title="Profile & Settings"
-      description="Manage your account details and keep your examination account secure."
       contentClassName="mx-auto max-w-5xl"
     >
       <div className="grid gap-6 lg:grid-cols-5">

@@ -263,7 +263,6 @@ function WorkspaceSidebar({
 
 export default function PortalShell({
   title,
-  description,
   actions,
   children,
   contentClassName,
@@ -328,50 +327,51 @@ export default function PortalShell({
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-xl">
-            <div className="flex flex-wrap items-start justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-              <div className="flex items-start gap-3">
-                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="mt-1 md:hidden"
-                      aria-label="Open sidebar"
-                    >
-                      <Menu className="h-5 w-5" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[18rem] border-r p-0">
-                    <SheetHeader className="sr-only">
-                      <SheetTitle>{config.label} navigation</SheetTitle>
-                      <SheetDescription>
-                        Open the sidebar navigation for this workspace.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <WorkspaceSidebar
-                      user={user}
-                      pathname={pathname}
-                      onNavigate={handleNavigate}
-                      onLogout={handleLogout}
-                    />
-                  </SheetContent>
-                </Sheet>
+          <header className="sticky top-0 z-20 border-b border-border/50 bg-background/58 shadow-[0_1px_0_hsl(var(--background)/0.65)] backdrop-blur-2xl backdrop-saturate-150">
+            <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-5 lg:px-8">
+              <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card/46 px-3 py-2.5 shadow-[0_16px_44px_-34px_hsl(var(--foreground)/0.45)] ring-1 ring-white/10 dark:bg-card/38 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 shrink-0 rounded-xl bg-background/55 shadow-sm md:hidden"
+                        aria-label="Open sidebar"
+                      >
+                        <Menu className="h-4 w-4" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-[18rem] border-r p-0">
+                      <SheetHeader className="sr-only">
+                        <SheetTitle>{config.label} navigation</SheetTitle>
+                        <SheetDescription>
+                          Open the sidebar navigation for this workspace.
+                        </SheetDescription>
+                      </SheetHeader>
+                      <WorkspaceSidebar
+                        user={user}
+                        pathname={pathname}
+                        onNavigate={handleNavigate}
+                        onLogout={handleLogout}
+                      />
+                    </SheetContent>
+                  </Sheet>
 
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-                    {config.label}
-                  </p>
-                  <h1 className="mt-1 text-2xl font-bold text-foreground">{title}</h1>
-                  {description ? (
-                    <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
-                  ) : null}
+                  <div className="min-w-0">
+                    <div className="mb-1.5 inline-flex items-center rounded-full border border-border/60 bg-background/45 px-2.5 py-0.5 text-[10px] font-semibold uppercase leading-4 tracking-[0.2em] text-muted-foreground">
+                      {config.label} workspace
+                    </div>
+                    <h1 className="truncate text-xl font-semibold leading-7 tracking-tight text-foreground sm:text-2xl">
+                      {title}
+                    </h1>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                {showThemeToggle ? <ThemeToggle /> : null}
-                {actions}
+                <div className="flex flex-wrap items-center gap-2 [&_a]:h-9 [&_button]:h-9 [&_button]:rounded-xl">
+                  {showThemeToggle ? <ThemeToggle /> : null}
+                  {actions}
+                </div>
               </div>
             </div>
           </header>

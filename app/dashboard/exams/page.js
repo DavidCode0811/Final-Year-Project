@@ -401,7 +401,6 @@ export default function StudentExamsPage() {
   return (
     <PortalShell
       title="Exams"
-      description="Track available assessments, completed work, scores, and missed exam windows."
       showThemeToggle={false}
       contentClassName="mx-auto max-w-7xl"
     >

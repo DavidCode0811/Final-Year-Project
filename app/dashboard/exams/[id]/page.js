@@ -215,7 +215,6 @@ export default function LecturerExamDetailsPage() {
   return (
     <PortalShell
       title={exam?.title || 'Exam Details'}
-      description="Review the assessment metadata you just created and confirm the publishing window."
       actions={
         <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="outline" className="bg-background/80">
@@ -242,10 +241,10 @@ export default function LecturerExamDetailsPage() {
         </Card>
       ) : (
         <div className="space-y-6">
-          <Card className="overflow-hidden border-border/80 bg-card shadow-sm dark:bg-zinc-950/80">
-            <CardHeader className="bg-muted/35 p-6 dark:bg-zinc-900/60 sm:p-8">
-              <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                <div className="max-w-3xl space-y-4">
+          <Card className="overflow-hidden border-border/70 bg-card/70 shadow-sm backdrop-blur-xl dark:bg-card/55">
+            <CardHeader className="border-b border-border/60 bg-background/35 px-4 py-3 dark:bg-background/20 sm:px-5">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge
                       variant="outline"
@@ -258,18 +257,15 @@ export default function LecturerExamDetailsPage() {
                       Lecturer workspace
                     </div>
                   </div>
-                  <CardTitle className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  <CardTitle className="truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                     {exam.title}
                   </CardTitle>
-                  <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-                    Review the assessment setup, confirm the schedule, and continue building your exam with a clear publishing path.
-                  </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="h-11 w-11 rounded-full p-0">
+                      <Button variant="outline" className="h-9 w-9 rounded-xl bg-background/60 p-0">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

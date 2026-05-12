@@ -790,7 +790,6 @@ export default function LecturerExamResultsPage() {
   return (
     <PortalShell
       title={exam?.title ? `${exam.title} Results` : 'Exam Results'}
-      description="Analyze submissions, performance, completion state, and integrity signals."
       actions={
         <div className="flex flex-wrap gap-3">
           <Button asChild variant="outline" className="bg-background/80">

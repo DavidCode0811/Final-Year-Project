@@ -257,7 +257,6 @@ export default function ExamQuestionsPage() {
     <>
       <PortalShell
         title={exam?.title ? `${exam.title} Questions` : 'Question Management'}
-        description="Create, update, and organize the question set for this exam."
         showThemeToggle={false}
         actions={
           <div className="flex flex-wrap items-center gap-3">

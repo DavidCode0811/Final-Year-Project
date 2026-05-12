@@ -492,7 +492,6 @@ function LecturerDashboardView({ user }) {
     <>
       <PortalShell
         title="Lecturer dashboard"
-        description="Create assessments, publish when ready, and review cohort performance."
         showThemeToggle={false}
         actions={
           <Button asChild size="sm" className="rounded-full px-4 shadow-sm">
@@ -512,9 +511,6 @@ function LecturerDashboardView({ user }) {
 
         <div id="manage-exams" className="mt-10 scroll-mt-24 sm:mt-12">
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Your exams</h2>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            A minimal overview — open an exam for full schedule and settings.
-          </p>
         </div>
 
         {loading ? (
@@ -674,7 +670,6 @@ function StudentDashboardView({ user }) {
   return (
     <PortalShell
       title={`Welcome back, ${user.name}`}
-      description="Your published exams are ready to launch."
       showThemeToggle={true}
       contentClassName="mx-auto max-w-7xl"
     >
@@ -687,9 +682,6 @@ function StudentDashboardView({ user }) {
       <div id="exams" className="mt-8 flex scroll-mt-24 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">Available exams</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Launch your active assessments with a single tap.
-          </p>
         </div>
       </div>
 
