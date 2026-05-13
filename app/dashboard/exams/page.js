@@ -139,9 +139,9 @@ function ExamBadge({ status }) {
 function SummaryTile({ icon: Icon, label, value }) {
   return (
     <Card className="border-border/70 bg-card/90 shadow-sm">
-      <CardContent className="flex items-center gap-3 p-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
-          <Icon className="h-5 w-5" />
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
+          <Icon className="h-6 w-6" />
         </div>
         <div>
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
@@ -164,80 +164,88 @@ function ExamDetailDialog({ exam, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl rounded-2xl border-border/80">
-        <DialogHeader>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <DialogTitle className="text-2xl tracking-tight">{exam.title}</DialogTitle>
-              <DialogDescription className="mt-1">
-                {exam.lecturer?.name || 'Unknown lecturer'} - {exam.duration} minutes
-              </DialogDescription>
+      <DialogContent className="w-[95vw] max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border-border/80 p-0 sm:top-[5vh] top-[2vh] translate-y-0">
+        <div className="flex max-h-[90vh] flex-col">
+          <DialogHeader className="flex-shrink-0 border-b border-border/40 px-6 py-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <DialogTitle className="text-xl tracking-tight sm:text-2xl">{exam.title}</DialogTitle>
+                <DialogDescription className="mt-1">
+                  {exam.lecturer?.name || 'Unknown lecturer'} - {exam.duration} minutes
+                </DialogDescription>
+              </div>
+              <ExamBadge status={status} />
             </div>
-            <ExamBadge status={status} />
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6 pb-8">
+            <div className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <SummaryTile icon={FileQuestion} label="Questions" value={exam.question_count} />
+                <SummaryTile icon={CheckCircle2} label="Score" value={getScoreLabel(exam)} />
+                <SummaryTile icon={ShieldAlert} label="Warnings" value={violations.length} />
+                <SummaryTile icon={TimerReset} label="Answered" value={`${answered}/${exam.question_count}`} />
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                <Card className="border-border/70 bg-muted/25">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Exam information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Opens</span>
+                      <span className="text-right font-medium">{formatDateTime(exam.start_time)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Closes</span>
+                      <span className="text-right font-medium">{formatDateTime(exam.end_time)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Submitted</span>
+                      <span className="text-right font-medium">
+                        {formatDateTime(exam.attempt?.submitted_at || exam.attempt?.end_time)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/70 bg-muted/25">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Result breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-sm">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Submission status</span>
+                      <span className="font-medium">{getSubmissionLabel(exam.attempt)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Correct answers</span>
+                      <span className="font-medium">{exam.attempt ? correct : 'Not available'}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Integrity events</span>
+                      <span className="font-medium">{violations.length}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
-        </DialogHeader>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <SummaryTile icon={FileQuestion} label="Questions" value={exam.question_count} />
-          <SummaryTile icon={CheckCircle2} label="Score" value={getScoreLabel(exam)} />
-          <SummaryTile icon={ShieldAlert} label="Warnings" value={violations.length} />
-          <SummaryTile icon={TimerReset} label="Answered" value={`${answered}/${exam.question_count}`} />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card className="border-border/70 bg-muted/25">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Exam information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Opens</span>
-                <span className="text-right font-medium">{formatDateTime(exam.start_time)}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Closes</span>
-                <span className="text-right font-medium">{formatDateTime(exam.end_time)}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Submitted</span>
-                <span className="text-right font-medium">
-                  {formatDateTime(exam.attempt?.submitted_at || exam.attempt?.end_time)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70 bg-muted/25">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Result breakdown</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Submission status</span>
-                <span className="font-medium">{getSubmissionLabel(exam.attempt)}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Correct answers</span>
-                <span className="font-medium">{exam.attempt ? correct : 'Not available'}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Integrity events</span>
-                <span className="font-medium">{violations.length}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex flex-wrap justify-end gap-2">
-          {exam.attempt?.status === 'submitted' || exam.attempt?.status === 'auto_submitted' ? (
-            <Button asChild>
-              <Link href={`/result/${exam.id}`}>Open result</Link>
-            </Button>
-          ) : status === 'Available' ? (
-            <Button asChild>
-              <Link href={`/exam/${exam.id}`}>Start exam</Link>
-            </Button>
-          ) : null}
+          <div className="flex-shrink-0 border-t border-border/40 px-6 py-5">
+            <div className="flex flex-wrap justify-end gap-2">
+              {exam.attempt?.status === 'submitted' || exam.attempt?.status === 'auto_submitted' ? (
+                <Button asChild>
+                  <Link href={`/result/${exam.id}`}>Open result</Link>
+                </Button>
+              ) : status === 'Available' ? (
+                <Button asChild>
+                  <Link href={`/exam/${exam.id}`}>Start exam</Link>
+                </Button>
+              ) : null}
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
