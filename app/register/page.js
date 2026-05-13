@@ -126,9 +126,9 @@ export default function RegisterPage() {
                   {showPassword ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 Must be at least 8 characters.
-              </p>
+              </p> */}
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
