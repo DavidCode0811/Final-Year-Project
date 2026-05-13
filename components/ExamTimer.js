@@ -74,9 +74,9 @@ export function ExamTimer({
   };
 
   return (
-    <div className="fixed right-6 top-6 z-50">
+    <div className="fixed inset-x-4 bottom-4 z-50 sm:inset-auto sm:right-6 sm:top-6">
       <motion.div
-        className="relative"
+        className="relative mx-auto w-full max-w-sm sm:w-auto"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
@@ -104,7 +104,7 @@ export function ExamTimer({
         <AnimatePresence>
           {isExpanded && (
             <motion.div
-              className="absolute right-0 top-full mt-2 w-80 overflow-hidden rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl"
+              className="absolute right-0 bottom-full mb-2 w-full max-w-sm overflow-hidden rounded-2xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 shadow-2xl sm:top-full sm:bottom-auto sm:mb-0 sm:mt-2 sm:w-80"
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}

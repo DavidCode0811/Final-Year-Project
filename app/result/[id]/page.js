@@ -87,7 +87,7 @@ export default function ResultPage() {
   return (
     <PortalShell
       title="Exam Result"
-      contentClassName="mx-auto max-w-5xl"
+      contentClassName="mx-auto max-w-5xl px-4 sm:px-6"
     >
       <div className="space-y-6">
         <Card className="border-border/80 bg-card/90 shadow-sm">
@@ -103,8 +103,8 @@ export default function ResultPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="text-center">
-              <div className="mb-2 text-6xl font-bold text-foreground">{percentage}%</div>
-              <p className="text-muted-foreground">
+              <div className="mb-2 text-5xl font-bold text-foreground sm:text-6xl">{percentage}%</div>
+              <p className="text-sm text-muted-foreground sm:text-base">
                 {result.score} out of {totalMarks} marks earned
               </p>
             </div>
@@ -179,9 +179,51 @@ export default function ResultPage() {
           <CardHeader>
             <CardTitle className="text-xl">Detail View</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4 sm:hidden">
+              {(result.questionResults || []).map((question) => (
+                <div
+                  key={question.questionId}
+                  className="rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm"
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        Q{question.index}. {question.questionText}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {question.marks} mark(s)
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={
+                        question.isCorrect
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : 'border-rose-200 bg-rose-50 text-rose-700'
+                      }
+                    >
+                      {question.isCorrect ? 'Correct' : 'Incorrect'}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
+                    <p>
+                      <span className="font-medium text-foreground">Your answer:</span>{' '}
+                      {question.selectedAnswer || '-'}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">Correct answer:</span>{' '}
+                      {question.correctAnswer}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="overflow-x-auto rounded-3xl border border-border/70 bg-background/80 p-0 shadow-sm hidden sm:block">
+              <Table className="min-w-full">
+                <TableHeader>
                 <TableRow>
                   <TableHead>Question</TableHead>
                   <TableHead>Student Answer</TableHead>
@@ -215,7 +257,8 @@ export default function ResultPage() {
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

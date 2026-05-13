@@ -29,6 +29,7 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   clearStoredExamAnswers,
   clearStoredQuestionIndex,
@@ -468,6 +469,70 @@ export default function StudentExamPage() {
     });
   };
 
+  const renderOverviewPanel = () => (
+    <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
+          <FileText className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Exam overview</p>
+          <h2 className="mt-2 text-lg font-semibold text-slate-100">{exam.title}</h2>
+        </div>
+      </div>
+      <div className="space-y-3 text-sm text-slate-400">
+        <p>Question {currentQuestionIndex + 1} of {totalQuestions}</p>
+        <p className="text-slate-400">Answers are auto-saved as you work.</p>
+      </div>
+    </div>
+  );
+
+  const renderQuestionNavigator = (closeOnSelect = false) => (
+    <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
+          <span className="text-sm font-semibold">Q</span>
+        </span>
+        <h3 className="text-sm font-semibold text-slate-200">Navigator</h3>
+      </div>
+      <ScrollArea className="max-h-64 pr-2">
+        <div className="grid grid-cols-6 gap-2">
+          {exam.questions?.map((question, index) => {
+            const isCurrent = index === currentQuestionIndex;
+            const isAnswered = Boolean(answers[question.id]);
+            const button = (
+              <motion.button
+                type="button"
+                className={`aspect-square rounded-2xl border text-sm font-semibold transition-all duration-200 focus:outline-none ${
+                  isCurrent
+                    ? 'border-blue-400 bg-blue-500 text-white shadow-[0_16px_50px_-30px_rgba(59,130,246,0.8)]'
+                    : isAnswered
+                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20'
+                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-700'
+                }`}
+                onClick={() => handleQuestionJump(index)}
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {index + 1}
+              </motion.button>
+            );
+
+            if (!closeOnSelect) {
+              return <span key={question.id}>{button}</span>;
+            }
+
+            return (
+              <SheetClose asChild key={question.id}>
+                {button}
+              </SheetClose>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+
   if (!mounted || loading || !user) {
     return <FullScreenLoader message="Checking your exam access..." />;
   }
@@ -703,88 +768,61 @@ export default function StudentExamPage() {
         isOffline={isOffline}
       />
 
-      <div className="mx-auto flex max-w-7xl gap-8 px-6 py-8">
-        <aside className="w-full lg:w-80 lg:flex-shrink-0">
-          <motion.div
-            className="sticky top-8 space-y-6"
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-          >
-            <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
-                  <FileText className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Exam overview</p>
-                  <h2 className="mt-2 text-lg font-semibold text-slate-100">{exam.title}</h2>
-                </div>
-              </div>
-              <div className="space-y-3 text-sm text-slate-400">
-                <p>Question {currentQuestionIndex + 1} of {totalQuestions}</p>
-                <p className="text-slate-400">Answers are auto-saved as you work.</p>
-              </div>
-            </div>
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)]">
+        <div className="space-y-6">
+          <div className="lg:hidden">{renderOverviewPanel()}</div>
 
-            <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
-                  <span className="text-sm font-semibold">Q</span>
-                </span>
-                <h3 className="text-sm font-semibold text-slate-200">Navigator</h3>
-              </div>
-              <ScrollArea className="max-h-64 pr-2">
-                <div className="grid grid-cols-6 gap-2">
-                  {exam.questions?.map((question, index) => {
-                    const isCurrent = index === currentQuestionIndex;
-                    const isAnswered = Boolean(answers[question.id]);
-
-                    return (
-                      <motion.button
-                        key={question.id}
-                        type="button"
-                        className={`aspect-square rounded-2xl border text-sm font-semibold transition-all duration-200 focus:outline-none ${
-                          isCurrent
-                            ? 'border-blue-400 bg-blue-500 text-white shadow-[0_16px_50px_-30px_rgba(59,130,246,0.8)]'
-                            : isAnswered
-                              ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20'
-                              : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-700'
-                        }`}
-                        onClick={() => handleQuestionJump(index)}
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        {index + 1}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
-            </div>
-
-            <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+          <Sheet>
+            <SheetTrigger asChild>
               <Button
                 type="button"
-                className="w-full bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700/50 h-11 rounded-2xl font-semibold shadow-lg shadow-slate-950/20 transition-all duration-200 hover:shadow-xl hover:shadow-slate-950/30"
-                onClick={handleSubmitExam}
-                disabled={submitting}
+                className="flex w-full items-center justify-center gap-2 rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-sm font-semibold text-slate-100 shadow-lg shadow-slate-950/20 transition-all hover:bg-slate-800"
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit Exam
-                  </>
-                )}
+                View question navigator
+                <ChevronRight className="h-4 w-4" />
               </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-3xl bg-slate-950/95 p-0 pb-6 shadow-2xl">
+              <div className="space-y-4 px-6 pt-6">
+                {renderOverviewPanel()}
+                {renderQuestionNavigator(true)}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <aside className="hidden lg:block w-full">
+            <motion.div
+              className="sticky top-8 space-y-6"
+              initial={{ opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.45, ease: 'easeOut' }}
+            >
+              {renderOverviewPanel()}
+              {renderQuestionNavigator(false)}
+
+              <motion.div whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="button"
+                  className="w-full bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700/50 h-11 rounded-2xl font-semibold shadow-lg shadow-slate-950/20 transition-all duration-200 hover:shadow-xl hover:shadow-slate-950/30"
+                  onClick={handleSubmitExam}
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit Exam
+                    </>
+                  )}
+                </Button>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        </aside>
+          </aside>
+        </div>
 
         <main className="flex-1 min-w-0">
           <AnimatePresence mode="wait">
@@ -795,21 +833,20 @@ export default function StudentExamPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -24 }}
                 transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-8 shadow-2xl"
+                className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl sm:p-8"
               >
                 <div className="mb-8 space-y-6">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-800 text-slate-300">
                       <CircleHelp className="h-6 w-6" />
                     </div>
                     <div>
                       <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-400">Question</p>
-                      <h1 className="mt-2 text-3xl font-semibold text-slate-100 leading-tight">
+                      <h1 className="mt-2 text-2xl font-semibold text-slate-100 leading-tight sm:text-3xl">
                         {currentQuestion.question_text}
                       </h1>
                     </div>
                   </div>
-
                 </div>
 
                 <div className="space-y-4">
@@ -840,7 +877,7 @@ export default function StudentExamPage() {
                               value={option}
                               className="mt-1"
                             />
-                            <div className="space-y-2">
+                            <div className="space-y-2 break-words">
                               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
                                 Option {String.fromCharCode(65 + index)}
                               </p>
@@ -853,11 +890,11 @@ export default function StudentExamPage() {
                   </RadioGroup>
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-950/70 p-5">
+                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5">
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600 hover:bg-slate-800"
+                    className="flex-1 min-w-0 border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600 hover:bg-slate-800 px-3 py-3 text-sm sm:px-4 sm:py-2"
                     onClick={handlePrevious}
                     disabled={currentQuestionIndex === 0}
                   >
@@ -865,14 +902,14 @@ export default function StudentExamPage() {
                     Previous
                   </Button>
 
-                  <div className="text-sm text-slate-400">
+                  <div className="min-w-[120px] text-center text-sm text-slate-400 sm:min-w-0">
                     Question {currentQuestionIndex + 1} of {totalQuestions}
                   </div>
 
                   {currentQuestionIndex === totalQuestions - 1 ? (
                     <Button
                       type="button"
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600"
+                      className="flex-1 min-w-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 px-3 py-3 text-sm sm:flex-none sm:px-4 sm:py-2"
                       onClick={handleSubmitExam}
                       disabled={submitting}
                     >
@@ -891,7 +928,7 @@ export default function StudentExamPage() {
                   ) : (
                     <Button
                       type="button"
-                      className="bg-slate-700 text-slate-100 hover:bg-slate-600"
+                      className="flex-1 min-w-0 bg-slate-700 text-slate-100 hover:bg-slate-600 px-3 py-3 text-sm sm:flex-none sm:px-4 sm:py-2"
                       onClick={handleNext}
                     >
                       Next
@@ -908,7 +945,7 @@ export default function StudentExamPage() {
               >
                 <CircleHelp className="mx-auto h-16 w-16 text-slate-500" />
                 <h3 className="mt-4 text-2xl font-semibold text-slate-100">No questions are available</h3>
-                <p className="mt-2 text-slate-400">This exam doesn't have any questions yet.</p>
+                <p className="mt-2 text-slate-400">This exam doesn&apos;t have any questions yet.</p>
               </motion.div>
             )}
           </AnimatePresence>

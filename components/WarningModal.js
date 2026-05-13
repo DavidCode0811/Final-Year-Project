@@ -42,7 +42,7 @@ export function WarningModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onDismiss?.()}>
-      <DialogContent className="max-w-md border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
+      <DialogContent className="max-w-[min(95vw,28rem)] border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
         <div className={`rounded-3xl border bg-card shadow-2xl ${styles.panel}`}>
           <div className="border-b border-border/40 px-6 py-5">
             <div className="flex items-start gap-4">
