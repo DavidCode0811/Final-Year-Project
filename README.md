@@ -1,6 +1,8 @@
-# Exam Portal - Secure Online Examination System
+# Sentinel Exam - Secure Online Examination System
 
-A production-ready secure examination system built with Next.js featuring advanced anti-cheating mechanisms.
+A production-ready secure examination system built with Next.js featuring advanced anti-cheating mechanisms and a modern SaaS-like dashboard.
+
+**🚀 Live Demo:** https://sentinel-exam.vercel.app/
 
 ## Features
 
@@ -64,16 +66,29 @@ All suspicious activities are logged to the database:
 - manual_submit
 - auto_submit
 
+### Modern UI/UX Enhancements
+- **Sleek Dashboard Design:** Premium SaaS-like aesthetic with modern typography and spacing
+- **Theme Toggle:** Light/Dark mode support on both student and lecturer dashboards
+- **Responsive Mobile First:** Fully optimized for mobile (375px), tablet (768px), and desktop (1024px+)
+- **Improved Components:** 
+  - Rounded buttons (`rounded-full`) for modern look
+  - Responsive card padding (`p-4 sm:p-5 lg:p-6`)
+  - Adaptive typography scaling (`text-lg sm:text-2xl`)
+  - Better touch targets on mobile (h-10/h-11 for inputs/buttons)
+- **Clean Headers:** Minimalist page headers without unnecessary clutter
+- **Mobile-Friendly Forms:** Optimized login/register pages with proper spacing and sizing
+
 ## Tech Stack
 
-- **Framework:** Next.js 13 (App Router)
-- **Language:** JavaScript
-- **Styling:** Tailwind CSS
+- **Framework:** Next.js 13+ (App Router)
+- **Language:** JavaScript/TypeScript
+- **Styling:** Tailwind CSS (mobile-first responsive design)
 - **UI Components:** shadcn/ui + Radix UI
 - **Backend:** Next.js API Routes
 - **Database:** PostgreSQL (Supabase)
 - **Authentication:** JWT with bcrypt
 - **Deployment:** Vercel
+- **Theme Management:** System-wide light/dark mode support
 
 ## Project Structure
 
@@ -233,6 +248,36 @@ vercel
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 5. Deploy
+
+## Recent Improvements (Latest Release)
+
+### UI/UX Redesign
+- **Modern Dashboard Aesthetic:** Redesigned headers and page layouts for a premium SaaS feel
+- **Sleek Component Styling:** Rounded-full buttons, improved card shadows, and modern spacing
+- **Clean Typography:** Responsive font scaling with better visual hierarchy
+- **Minimalist Headers:** Removed unnecessary descriptive text for cleaner interfaces
+
+### Mobile Responsiveness
+- **Mobile-First Design:** All components optimized for small screens (375px and up)
+- **Responsive Layouts:** Flexible grids and layouts that adapt seamlessly across all breakpoints
+  - 1 column on mobile
+  - 2-3 columns on tablets
+  - 3+ columns on desktop
+- **Touch-Friendly:** Larger button and input targets (h-10/h-11) for better mobile UX
+- **Responsive Padding:** Adaptive spacing scheme (`p-4 sm:p-5 lg:p-6`)
+- **Better Form Experience:** Optimized login/register pages with improved spacing
+
+### Theme Toggle
+- **System-Wide Theme Support:** Added theme toggle to both student and lecturer dashboards
+- **Persistent Theme:** Theme preference is maintained across page navigation
+- **Light/Dark Modes:** Full support for dark and light themes across all pages
+
+### Component Improvements
+- Cards: Rounded corners (rounded-3xl) with better shadows
+- Buttons: Modern rounded-full styling with smooth transitions
+- Inputs: Rounded-xl styling with improved focus states
+- Typography: Responsive sizing that adapts to screen size
+- Headers: Flexible stacking (flex-col to flex-row at breakpoints)
 
 ## Usage Guide
 
