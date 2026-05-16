@@ -492,7 +492,7 @@ function LecturerDashboardView({ user }) {
     <>
       <PortalShell
         title="Lecturer dashboard"
-        showThemeToggle={false}
+        showThemeToggle={true}
         actions={
           <Button asChild size="sm" className="rounded-full px-4 shadow-sm">
             <Link href="/create-exam">
