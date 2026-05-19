@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 
 import { getAuthenticatedAppUser, getHttpStatus } from '@/lib/server-auth';
 
+function isUuid(value) {
+  return (
+    typeof value === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
 function buildScorePayload(scoredAnswers, examId, attemptId) {
   const relevantAnswers = (scoredAnswers || []).filter((answer) => {
     return String(answer?.question?.exam_id || '') === String(examId);
@@ -41,9 +48,16 @@ export async function POST(request) {
 
     const { exam_id, attempt_id, answers, submission_type = 'manual' } = await request.json();
 
-    if (!exam_id || !answers) {
+    if (!isUuid(exam_id) || !answers) {
       return NextResponse.json(
-        { error: 'Exam ID and answers are required' },
+        { error: 'A valid exam ID and answers are required' },
+        { status: 400 }
+      );
+    }
+
+    if (attempt_id && !isUuid(attempt_id)) {
+      return NextResponse.json(
+        { error: 'A valid attempt ID is required' },
         { status: 400 }
       );
     }
@@ -202,6 +216,7 @@ export async function POST(request) {
         end_time: submittedAt,
         last_saved_at: submittedAt,
         score,
+        is_active: false,
       })
       .eq('id', targetAttemptId)
       .eq('student_id', profile.id)

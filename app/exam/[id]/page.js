@@ -42,6 +42,7 @@ import {
   getExamAvailability,
   getStoredExamAnswers,
   getStoredQuestionIndex,
+  isUuid,
   isAttemptSubmitted,
   logExamActivity,
   saveAttemptAnswer,
@@ -182,7 +183,13 @@ export default function StudentExamPage() {
     let active = true;
 
     const loadStudentExam = async () => {
-      if (!mounted || !user || user.role !== 'student' || !token || !examId) {
+      if (!mounted || !user || user.role !== 'student' || !token) {
+        return;
+      }
+
+      if (!isUuid(examId)) {
+        setLoadingExam(false);
+        setLoadError('A valid exam ID is required.');
         return;
       }
 
@@ -199,7 +206,7 @@ export default function StudentExamPage() {
           return;
         }
 
-        const existingAttempt = await fetchStudentAttempt(examId, user.id);
+        const existingAttempt = await fetchStudentAttempt(examId, token);
 
         if (isAttemptSubmitted(existingAttempt)) {
           router.replace(`/result/${examId}`);
@@ -312,7 +319,7 @@ export default function StudentExamPage() {
   };
 
   const logViolationEvent = async (eventType, metadata = {}) => {
-    if (!token || !examId) {
+    if (!token || !isUuid(examId)) {
       return;
     }
 
@@ -406,14 +413,15 @@ export default function StudentExamPage() {
   });
 
   const handleStartExam = async () => {
-    if (!user || !examId || !availability.available) {
+    if (!user || !isUuid(examId) || !availability.available || !token) {
+      toast.error('A valid exam ID is required.');
       return;
     }
 
     setPreparingAttempt(true);
 
     try {
-      const attemptData = await createOrResumeAttempt(examId, user.id);
+      const attemptData = await createOrResumeAttempt(examId, token);
       setAttempt(attemptData);
       setHasStarted(true);
       submissionLockRef.current = false;
