@@ -47,7 +47,7 @@ export default function RegisterPage() {
 
       if (data.requiresEmailVerification) {
         setSuccessMessage(
-          'Account created. Check your email, verify your address, and you will be signed in with your Supabase account.'
+          'Account created. Check your email, verify your address.'
         );
       }
     } catch (err) {
