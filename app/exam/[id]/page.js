@@ -496,27 +496,37 @@ export default function StudentExamPage() {
   );
 
   const renderQuestionNavigator = (closeOnSelect = false) => (
-    <div className="rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/70 p-6 shadow-2xl">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-800 text-slate-300">
-          <span className="text-sm font-semibold">Q</span>
+    <div className="rounded-3xl border border-slate-800/70 bg-slate-900/80 p-5 shadow-2xl backdrop-blur-xl lg:rounded-2xl lg:p-5">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-sm font-semibold text-slate-200 ring-1 ring-slate-700/70">
+            Q
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-slate-100">Question navigator</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              {countAnsweredQuestions(answers)} answered
+            </p>
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full border border-slate-700 bg-slate-950/60 px-2.5 py-1 text-xs font-semibold text-slate-400">
+          {currentQuestionIndex + 1}/{totalQuestions}
         </span>
-        <h3 className="text-sm font-semibold text-slate-200">Navigator</h3>
       </div>
-      <ScrollArea className="max-h-64 pr-2">
-        <div className="grid grid-cols-6 gap-2">
+      <ScrollArea className="max-h-64 pr-2 lg:max-h-[28rem] lg:pr-1">
+        <div className="grid grid-cols-5 gap-2.5 lg:grid-cols-4 lg:gap-3">
           {exam.questions?.map((question, index) => {
             const isCurrent = index === currentQuestionIndex;
             const isAnswered = Boolean(answers[question.id]);
             const button = (
               <motion.button
                 type="button"
-                className={`aspect-square rounded-2xl border text-sm font-semibold transition-all duration-200 focus:outline-none ${
+                className={`flex aspect-square w-full items-center justify-center rounded-xl border text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300/70 lg:text-base ${
                   isCurrent
-                    ? 'border-blue-400 bg-blue-500 text-white shadow-[0_16px_50px_-30px_rgba(59,130,246,0.8)]'
+                    ? 'border-blue-300 bg-blue-500 text-white shadow-[0_14px_34px_-18px_rgba(59,130,246,0.9)]'
                     : isAnswered
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20'
-                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600 hover:bg-slate-700'
+                      ? 'border-emerald-500/70 bg-emerald-500/12 text-emerald-200 hover:border-emerald-400 hover:bg-emerald-500/20'
+                      : 'border-slate-700/80 bg-slate-800/75 text-slate-400 hover:border-slate-500 hover:bg-slate-700/80 hover:text-slate-100'
                 }`}
                 onClick={() => handleQuestionJump(index)}
                 whileHover={{ scale: 1.04 }}
@@ -538,6 +548,20 @@ export default function StudentExamPage() {
           })}
         </div>
       </ScrollArea>
+      <div className="mt-5 grid grid-cols-3 gap-2 text-[11px] font-medium text-slate-500">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-blue-500" />
+          Current
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          Answered
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-slate-600" />
+          Empty
+        </span>
+      </div>
     </div>
   );
 
@@ -780,23 +804,25 @@ export default function StudentExamPage() {
         <div className="space-y-6">
           <div className="lg:hidden">{renderOverviewPanel()}</div>
 
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                type="button"
-                className="flex w-full items-center justify-center gap-2 rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-sm font-semibold text-slate-100 shadow-lg shadow-slate-950/20 transition-all hover:bg-slate-800"
-              >
-                View question navigator
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-3xl bg-slate-950/95 p-0 pb-6 shadow-2xl">
-              <div className="space-y-4 px-6 pt-6">
-                {renderOverviewPanel()}
-                {renderQuestionNavigator(true)}
-              </div>
-            </SheetContent>
-          </Sheet>
+          <div className="lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  className="flex w-full items-center justify-center gap-2 rounded-3xl border border-slate-700 bg-slate-950/90 px-4 py-4 text-sm font-semibold text-slate-100 shadow-lg shadow-slate-950/20 transition-all hover:bg-slate-800"
+                >
+                  View question navigator
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="rounded-t-3xl bg-slate-950/95 p-0 pb-6 shadow-2xl">
+                <div className="space-y-4 px-6 pt-6">
+                  {renderOverviewPanel()}
+                  {renderQuestionNavigator(true)}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
           <aside className="hidden lg:block w-full">
             <motion.div
@@ -898,11 +924,11 @@ export default function StudentExamPage() {
                   </RadioGroup>
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5">
+                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-800 bg-slate-950/70 p-4 sm:p-5 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1 min-w-0 border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-600 hover:bg-slate-800 px-3 py-3 text-sm sm:px-4 sm:py-2"
+                    className="flex-1 min-w-0 border-slate-700 bg-slate-900 px-3 py-3 text-sm text-slate-200 hover:border-slate-600 hover:bg-slate-800 sm:px-4 sm:py-2 lg:h-11 lg:w-full lg:justify-center lg:rounded-2xl lg:px-4 lg:py-0"
                     onClick={handlePrevious}
                     disabled={currentQuestionIndex === 0}
                   >
@@ -936,7 +962,7 @@ export default function StudentExamPage() {
                   ) : (
                     <Button
                       type="button"
-                      className="flex-1 min-w-0 bg-slate-700 text-slate-100 hover:bg-slate-600 px-3 py-3 text-sm sm:flex-none sm:px-4 sm:py-2"
+                      className="flex-1 min-w-0 bg-slate-700 px-3 py-3 text-sm text-slate-100 hover:bg-slate-600 sm:px-4 sm:py-2 lg:h-11 lg:w-full lg:justify-center lg:rounded-2xl lg:px-4 lg:py-0"
                       onClick={handleNext}
                     >
                       Next
