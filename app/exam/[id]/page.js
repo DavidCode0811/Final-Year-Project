@@ -150,6 +150,7 @@ export default function StudentExamPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [preparingAttempt, setPreparingAttempt] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveState, setSaveState] = useState({
     status: 'idle',
     lastSavedAt: null,
@@ -343,12 +344,13 @@ export default function StudentExamPage() {
       return false;
     }
 
-    if (submissionLockRef.current) {
+    if (submissionLockRef.current || isSubmitting) {
       return false;
     }
 
     submissionLockRef.current = true;
     setSubmitting(true);
+    setIsSubmitting(true);
 
     try {
       await flushAnswerSaves(attempt.id, answers);
@@ -358,6 +360,10 @@ export default function StudentExamPage() {
         answers,
         attemptId: attempt.id,
         submissionType: mode === 'auto' ? 'auto' : 'manual',
+        reason,
+        violationCount,
+        tabSwitchCount,
+        warnings: warning ? [warning] : [],
       });
 
       clearStoredExamAnswers(examId);
@@ -383,6 +389,7 @@ export default function StudentExamPage() {
 
       submissionLockRef.current = false;
       setSubmitting(false);
+      setIsSubmitting(false);
       toast.error(
         mode === 'auto'
           ? message || 'Automatic submission failed. Please stay on this page.'
@@ -403,7 +410,7 @@ export default function StudentExamPage() {
     examId,
     attempt,
     durationMinutes: exam?.duration,
-    enabled: Boolean(hasStarted && attempt?.id && token && exam?.duration && !submitting),
+    enabled: Boolean(hasStarted && attempt?.id && token && exam?.duration && !isSubmitting),
     onAutoSubmit: async ({ reason }) =>
       submitExamAttempt({
         mode: 'auto',
@@ -839,9 +846,9 @@ export default function StudentExamPage() {
                   type="button"
                   className="w-full bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700/50 h-11 rounded-2xl font-semibold shadow-lg shadow-slate-950/20 transition-all duration-200 hover:shadow-xl hover:shadow-slate-950/30"
                   onClick={handleSubmitExam}
-                  disabled={submitting}
+                  disabled={isSubmitting}
                 >
-                  {submitting ? (
+                  {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Submitting...
@@ -945,9 +952,9 @@ export default function StudentExamPage() {
                       type="button"
                       className="flex-1 min-w-0 bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 px-3 py-3 text-sm sm:flex-none sm:px-4 sm:py-2"
                       onClick={handleSubmitExam}
-                      disabled={submitting}
+                      disabled={isSubmitting}
                     >
-                      {submitting ? (
+                      {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Submitting...

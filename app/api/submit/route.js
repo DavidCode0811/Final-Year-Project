@@ -46,7 +46,7 @@ export async function POST(request) {
       requireRole: 'student',
     });
 
-    const { exam_id, attempt_id, answers, submission_type = 'manual' } = await request.json();
+    const { exam_id, attempt_id, answers, submission_type = 'manual', submission_reason = null } = await request.json();
 
     if (!isUuid(exam_id) || !answers) {
       return NextResponse.json(
@@ -208,16 +208,22 @@ export async function POST(request) {
     const nextStatus = submission_type === 'auto' ? 'auto_submitted' : 'submitted';
     const submittedAt = new Date().toISOString();
 
+    const updatePayload = {
+      status: nextStatus,
+      submitted_at: submittedAt,
+      end_time: submittedAt,
+      last_saved_at: submittedAt,
+      score,
+      is_active: false,
+    };
+
+    if (submission_reason) {
+      updatePayload.submission_reason = submission_reason;
+    }
+
     const { data: attempt, error: updateAttemptError } = await db
       .from('exam_attempts')
-      .update({
-        status: nextStatus,
-        submitted_at: submittedAt,
-        end_time: submittedAt,
-        last_saved_at: submittedAt,
-        score,
-        is_active: false,
-      })
+      .update(updatePayload)
       .eq('id', targetAttemptId)
       .eq('student_id', profile.id)
       .eq('exam_id', exam_id)

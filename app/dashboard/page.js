@@ -104,6 +104,18 @@ function getStudentExamStatus(exam) {
   const now = Date.now();
   const startsAt = exam.start_time ? new Date(exam.start_time).getTime() : null;
   const endsAt = exam.end_time ? new Date(exam.end_time).getTime() : null;
+  const submitted =
+    ['submitted', 'auto_submitted'].includes(exam.attempt?.status) ||
+    Boolean(exam.attempt?.submitted_at) ||
+    Boolean(exam.attempt?.end_time);
+
+  if (submitted) {
+    return {
+      label: 'Completed',
+      className:
+        'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-900/70 dark:bg-sky-950/40 dark:text-sky-300',
+    };
+  }
 
   if (endsAt != null && !Number.isNaN(endsAt) && endsAt < now) {
     return {
@@ -618,13 +630,12 @@ function StudentDashboardView({ user }) {
         }
 
         const availableExams = data.exams || [];
-        setExams(availableExams);
 
         const [{ data: attempts, error: attemptsError }, { count: violationsCount, error: logsError }] =
           await Promise.all([
             supabase
               .from('exam_attempts')
-              .select('id, score')
+              .select('exam_id, status, score, submitted_at, end_time')
               .eq('student_id', user.id)
               .in('status', ['submitted', 'auto_submitted']),
             supabase
@@ -633,6 +644,14 @@ function StudentDashboardView({ user }) {
               .eq('user_id', user.id)
               .in('event_type', ['tab_switch', 'inactive', 'multi_tab']),
           ]);
+
+        const attemptMap = new Map((attempts || []).map((attempt) => [attempt.exam_id, attempt]));
+        const examsWithAttempts = availableExams.map((exam) => ({
+          ...exam,
+          attempt: attemptMap.get(exam.id) || null,
+        }));
+
+        setExams(examsWithAttempts);
 
         if (attemptsError) {
           throw new Error(attemptsError.message || 'Failed to load exam attempt summary.');
@@ -710,12 +729,18 @@ function StudentDashboardView({ user }) {
         <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {exams.map((exam) => {
             const status = getStudentExamStatus(exam);
+            const isCompleted = status.label === 'Completed';
+            const actionLabel = isCompleted ? 'View result' : status.label === 'Closed' ? 'View exam' : 'Start exam';
+            const actionHref = isCompleted ? `/result/${exam.id}` : `/exam/${exam.id}`;
+            const cardClasses = isCompleted
+              ? 'group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-slate-100/80 shadow-sm transition duration-300 dark:border-slate-700 dark:bg-slate-950/80'
+              : 'group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(15,23,42,0.3)]';
+            const buttonClasses = isCompleted
+              ? 'h-11 w-full rounded-full bg-slate-100 text-slate-950 text-sm font-semibold shadow-sm transition duration-200 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800'
+              : 'h-11 w-full rounded-full text-sm font-semibold shadow-sm transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]';
 
             return (
-              <article
-                key={exam.id}
-                className="group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(15,23,42,0.3)]"
-              >
+              <article key={exam.id} className={cardClasses}>
                 <div className="flex items-start justify-between gap-4 p-6">
                   <div className="min-w-0 space-y-2">
                     <h3 className="truncate text-lg font-semibold text-foreground">{exam.title}</h3>
@@ -741,11 +766,8 @@ function StudentDashboardView({ user }) {
                     </div>
                   </div>
 
-                  <Button
-                    asChild
-                    className="h-11 w-full rounded-full text-sm font-semibold shadow-sm transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    <Link href={`/exam/${exam.id}`}>{status.label === 'Closed' ? 'View exam' : 'Start exam'}</Link>
+                  <Button asChild className={buttonClasses}>
+                    <Link href={actionHref}>{actionLabel}</Link>
                   </Button>
                 </div>
               </article>
