@@ -43,8 +43,14 @@ export async function POST(request) {
     }
 
     const attemptId = metadata?.attemptId;
-    const violationCount = Number(metadata?.violationCount || metadata?.violation_count || 0);
-    const tabSwitchCount = Number(metadata?.tabSwitchCount || metadata?.tab_switch_count || 0);
+    const hasViolationCount =
+      Object.prototype.hasOwnProperty.call(metadata, 'violationCount') ||
+      Object.prototype.hasOwnProperty.call(metadata, 'violation_count');
+    const hasTabSwitchCount =
+      Object.prototype.hasOwnProperty.call(metadata, 'tabSwitchCount') ||
+      Object.prototype.hasOwnProperty.call(metadata, 'tab_switch_count');
+    const violationCount = Number(metadata?.violationCount ?? metadata?.violation_count);
+    const tabSwitchCount = Number(metadata?.tabSwitchCount ?? metadata?.tab_switch_count);
     const warnings = metadata?.warnings;
 
     if (isUuid(attemptId)) {
@@ -52,11 +58,11 @@ export async function POST(request) {
         last_active_at: new Date().toISOString(),
       };
 
-      if (Number.isInteger(violationCount)) {
+      if (hasViolationCount && Number.isInteger(violationCount)) {
         updates.violation_count = violationCount;
       }
 
-      if (Number.isInteger(tabSwitchCount)) {
+      if (hasTabSwitchCount && Number.isInteger(tabSwitchCount)) {
         updates.tab_switch_count = tabSwitchCount;
       }
 

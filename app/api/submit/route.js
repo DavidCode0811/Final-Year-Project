@@ -46,7 +46,16 @@ export async function POST(request) {
       requireRole: 'student',
     });
 
-    const { exam_id, attempt_id, answers, submission_type = 'manual', submission_reason = null } = await request.json();
+    const {
+      exam_id,
+      attempt_id,
+      answers,
+      submission_type = 'manual',
+      submission_reason = null,
+      violation_count,
+      tab_switch_count,
+      warnings,
+    } = await request.json();
 
     if (!isUuid(exam_id) || !answers) {
       return NextResponse.json(
@@ -219,6 +228,18 @@ export async function POST(request) {
 
     if (submission_reason) {
       updatePayload.submission_reason = submission_reason;
+    }
+
+    if (Number.isInteger(violation_count)) {
+      updatePayload.violation_count = violation_count;
+    }
+
+    if (Number.isInteger(tab_switch_count)) {
+      updatePayload.tab_switch_count = tab_switch_count;
+    }
+
+    if (Array.isArray(warnings)) {
+      updatePayload.warnings = warnings;
     }
 
     const { data: attempt, error: updateAttemptError } = await db

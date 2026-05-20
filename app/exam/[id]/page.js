@@ -363,7 +363,7 @@ export default function StudentExamPage() {
         reason,
         violationCount,
         tabSwitchCount,
-        warnings: warning ? [warning] : [],
+        warnings,
       });
 
       clearStoredExamAnswers(examId);
@@ -403,6 +403,7 @@ export default function StudentExamPage() {
     remainingSeconds,
     violationCount,
     tabSwitchCount,
+    warnings,
     warning,
     dismissWarning,
     isOffline,
