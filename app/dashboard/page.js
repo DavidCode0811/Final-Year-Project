@@ -139,6 +139,21 @@ function getStudentExamStatus(exam) {
   };
 }
 
+function getExamQuestionCount(exam) {
+  const count = Number(exam?.question_count ?? exam?.questions_count ?? exam?.questions?.length ?? 0);
+  return Number.isFinite(count) && count > 0 ? count : 0;
+}
+
+function formatQuestionCount(exam) {
+  const count = getExamQuestionCount(exam);
+
+  if (count < 1) {
+    return 'No questions added';
+  }
+
+  return `${count} ${count === 1 ? 'Question' : 'Questions'}`;
+}
+
 function StudentStatCard({ icon: Icon, label, value, tone = 'slate' }) {
   const tones = {
     slate: 'bg-muted/60 text-foreground',
@@ -354,19 +369,33 @@ function CompactStatCard({ icon: Icon, label, value, tone = 'slate' }) {
 
 function StudentExamCard({ exam }) {
   const status = getStudentExamStatus(exam);
+  const isCompleted = status.label === 'Completed';
+  const actionLabel = isCompleted ? 'View result' : status.label === 'Closed' ? 'View exam' : 'Start exam';
+  const actionHref = isCompleted ? `/result/${exam.id}` : `/exam/${exam.id}`;
+  const questionLabel = formatQuestionCount(exam);
 
   return (
-    <Card className="group flex h-full flex-col rounded-[28px] border border-border/70 bg-card/95 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-[0_20px_50px_-20px_rgba(15,23,42,0.25)] dark:hover:shadow-[0_20px_60px_-20px_rgba(0,0,0,0.55)]">
-      <CardContent className="flex h-full flex-col gap-6 p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="text-xl font-semibold tracking-tight text-foreground">{exam.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">By {exam.lecturer?.name || 'Unknown'}</p>
+    <Card
+      className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-3xl shadow-sm transition duration-300 ${
+        isCompleted
+          ? 'border-slate-200 bg-slate-100/80 dark:border-slate-700 dark:bg-slate-950/80'
+          : 'border-border/70 bg-card/90 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(15,23,42,0.3)] dark:hover:shadow-[0_20px_60px_-24px_rgba(0,0,0,0.55)]'
+      }`}
+    >
+      <CardContent className="flex h-full min-w-0 flex-col gap-4 p-4 sm:p-5">
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-2.5">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
+              {exam.title}
+            </h3>
+            <p className="mt-1.5 truncate text-sm text-muted-foreground">
+              By {exam.lecturer?.name || 'Unknown'}
+            </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <Badge
               variant="outline"
-              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] ${status.className}`}
+              className={`whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] ${status.className}`}
             >
               {status.label}
             </Badge>
@@ -384,9 +413,9 @@ function StudentExamCard({ exam }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/70 bg-card/95 dark:border-slate-700 dark:bg-slate-900/95">
                 <DropdownMenuItem asChild className="rounded-lg cursor-pointer hover:bg-muted/70 dark:hover:bg-slate-800">
-                  <Link href={`/exam/${exam.id}`}>
+                  <Link href={actionHref}>
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Start exam
+                    {actionLabel}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border/50 dark:bg-slate-700" />
@@ -399,25 +428,45 @@ function StudentExamCard({ exam }) {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-3xl border border-border/70 bg-muted/50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground dark:text-slate-400">Duration</p>
-            <p className="mt-3 text-lg font-semibold text-foreground dark:text-slate-100">{exam.duration} min</p>
+        <div className="mt-auto flex flex-wrap gap-2.5 border-t border-border/70 pt-4">
+          <div className="flex min-w-[136px] flex-1 items-center gap-2.5 rounded-2xl bg-muted/60 p-2.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-background/70 text-muted-foreground">
+              <Clock3 className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Duration
+              </p>
+              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground/90">
+                {exam.duration} min
+              </p>
+            </div>
           </div>
-          <div className="rounded-3xl border border-border/70 bg-muted/50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground dark:text-slate-400">Questions</p>
-            <p className="mt-3 text-lg font-semibold text-foreground dark:text-slate-100">{exam.question_count}</p>
+          <div className="flex min-w-[156px] flex-1 items-center gap-2.5 rounded-2xl bg-muted/60 p-2.5">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-background/70 text-muted-foreground">
+              <BookOpen className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Questions
+              </p>
+              <p className="mt-1 whitespace-nowrap text-sm font-semibold text-foreground/90">
+                {questionLabel}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="mt-auto">
-          <Button
-            asChild
-            className="h-11 w-full rounded-2xl bg-slate-950 text-white transition duration-200 hover:bg-slate-900 dark:bg-slate-100 dark:text-slate-950 dark:hover:bg-slate-200"
-          >
-            <Link href={`/exam/${exam.id}`}>Start exam</Link>
-          </Button>
-        </div>
+        <Button
+          asChild
+          className={`h-10 w-full rounded-full text-sm font-semibold shadow-sm transition duration-200 ${
+            isCompleted
+              ? 'bg-slate-100 text-slate-950 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800'
+              : 'hover:scale-[1.01] active:scale-[0.99]'
+          }`}
+        >
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -630,6 +679,10 @@ function StudentDashboardView({ user }) {
         }
 
         const availableExams = data.exams || [];
+        const normalizedAvailableExams = availableExams.map((exam) => ({
+          ...exam,
+          question_count: getExamQuestionCount(exam),
+        }));
 
         const [{ data: attempts, error: attemptsError }, { count: violationsCount, error: logsError }] =
           await Promise.all([
@@ -646,7 +699,7 @@ function StudentDashboardView({ user }) {
           ]);
 
         const attemptMap = new Map((attempts || []).map((attempt) => [attempt.exam_id, attempt]));
-        const examsWithAttempts = availableExams.map((exam) => ({
+        const examsWithAttempts = normalizedAvailableExams.map((exam) => ({
           ...exam,
           attempt: attemptMap.get(exam.id) || null,
         }));
@@ -690,9 +743,9 @@ function StudentDashboardView({ user }) {
     <PortalShell
       title={`Welcome back, ${user.name}`}
       showThemeToggle={true}
-      contentClassName="mx-auto max-w-7xl"
+      contentClassName="mx-auto w-full max-w-7xl"
     >
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid min-w-0 gap-4 md:grid-cols-3">
         <StudentStatCard icon={BookOpen} label="Available exams" value={summary.availableExams} tone="indigo" />
         <StudentStatCard icon={CheckCircle2} label="Completed" value={summary.completedExams} tone="emerald" />
         <StudentStatCard icon={AlertTriangle} label="Warnings" value={summary.violations} tone="amber" />
@@ -726,53 +779,10 @@ function StudentDashboardView({ user }) {
           </p>
         </Card>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {exams.map((exam) => {
-            const status = getStudentExamStatus(exam);
-            const isCompleted = status.label === 'Completed';
-            const actionLabel = isCompleted ? 'View result' : status.label === 'Closed' ? 'View exam' : 'Start exam';
-            const actionHref = isCompleted ? `/result/${exam.id}` : `/exam/${exam.id}`;
-            const cardClasses = isCompleted
-              ? 'group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-slate-100/80 shadow-sm transition duration-300 dark:border-slate-700 dark:bg-slate-950/80'
-              : 'group flex min-h-[220px] flex-col overflow-hidden rounded-3xl border border-border/70 bg-card/90 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-[0_18px_40px_-18px_rgba(15,23,42,0.3)]';
-            const buttonClasses = isCompleted
-              ? 'h-11 w-full rounded-full bg-slate-100 text-slate-950 text-sm font-semibold shadow-sm transition duration-200 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800'
-              : 'h-11 w-full rounded-full text-sm font-semibold shadow-sm transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]';
-
-            return (
-              <article key={exam.id} className={cardClasses}>
-                <div className="flex items-start justify-between gap-4 p-6">
-                  <div className="min-w-0 space-y-2">
-                    <h3 className="truncate text-lg font-semibold text-foreground">{exam.title}</h3>
-                    <p className="text-sm text-muted-foreground">By {exam.lecturer?.name || 'Unknown'}</p>
-                  </div>
-
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] ${status.className}`}
-                  >
-                    {status.label}
-                  </span>
-                </div>
-
-                <div className="mt-auto space-y-4 border-t border-border/70 p-6 pt-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
-                      <Clock3 className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground/90">{exam.duration} min</span>
-                    </div>
-                    <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
-                      <BookOpen className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground/90">{exam.question_count || 0} questions</span>
-                    </div>
-                  </div>
-
-                  <Button asChild className={buttonClasses}>
-                    <Link href={actionHref}>{actionLabel}</Link>
-                  </Button>
-                </div>
-              </article>
-            );
-          })}
+        <div className="mt-6 grid min-w-0 grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {exams.map((exam) => (
+            <StudentExamCard key={exam.id} exam={exam} />
+          ))}
         </div>
       )}
     </PortalShell>

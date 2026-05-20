@@ -308,7 +308,7 @@ export default function PortalShell({
 
   return (
     <div className="min-h-screen">
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen min-w-0">
         <aside
           className={cn(
             'sticky top-0 hidden h-screen border-r border-border/70 bg-card/95 shadow-[1px_0_0_hsl(var(--background)/0.65)] transition-[width] duration-300 ease-out md:block',
@@ -326,7 +326,7 @@ export default function PortalShell({
           />
         </aside>
 
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col transition-[padding,width] duration-300 ease-out">
           <header className="sticky top-0 z-20 border-b border-border/50 bg-background/58 shadow-[0_1px_0_hsl(var(--background)/0.65)] backdrop-blur-2xl backdrop-saturate-150">
             <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-5 lg:px-8">
               <div className="flex flex-col gap-3 rounded-2xl border border-border/60 bg-card/46 px-3 py-2.5 shadow-[0_16px_44px_-34px_hsl(var(--foreground)/0.45)] ring-1 ring-white/10 dark:bg-card/38 sm:flex-row sm:items-center sm:justify-between sm:px-4">
@@ -376,7 +376,7 @@ export default function PortalShell({
             </div>
           </header>
 
-          <main className={cn('flex-1 w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8', contentClassName)}>
+          <main className={cn('min-w-0 flex-1 w-full px-4 py-6 transition-[padding,width] duration-300 ease-out sm:px-6 lg:px-8 lg:py-8', contentClassName)}>
             {children}
           </main>
         </div>

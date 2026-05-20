@@ -1,16 +1,25 @@
 import { NextResponse } from 'next/server';
 
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { getAuthenticatedAppUser, getHttpStatus } from '@/lib/server-auth';
 
 export async function GET() {
   try {
-    const { data: exams, error } = await supabase
+    const db = supabaseAdmin || supabase;
+    const { data: exams, error } = await db
       .from('exams')
       .select(`
-        *,
-        lecturer:users!exams_lecturer_id_fkey(name, email),
-        questions(id)
+        id,
+        title,
+        description,
+        duration,
+        start_time,
+        end_time,
+        is_active,
+        is_published,
+        created_at,
+        lecturer:users!exams_lecturer_id_fkey(name, email)
       `)
       .eq('is_active', true)
       .eq('is_published', true)
@@ -29,10 +38,39 @@ export async function GET() {
       );
     }
 
+    const examIds = (exams || []).map((exam) => exam.id);
+    const questionCountByExamId = new Map();
+
+    if (examIds.length > 0) {
+      const { data: questionRows, error: questionCountError } = await db
+        .from('questions')
+        .select('exam_id, id')
+        .in('exam_id', examIds);
+
+      if (questionCountError) {
+        console.error('Supabase question count select error:', {
+          message: questionCountError.message,
+          code: questionCountError.code,
+          details: questionCountError.details,
+          hint: questionCountError.hint,
+        });
+        return NextResponse.json(
+          { error: 'Failed to fetch exam question counts' },
+          { status: 500 }
+        );
+      }
+
+      (questionRows || []).forEach((question) => {
+        questionCountByExamId.set(
+          question.exam_id,
+          (questionCountByExamId.get(question.exam_id) || 0) + 1
+        );
+      });
+    }
+
     const examsWithQuestionCount = exams.map((exam) => ({
       ...exam,
-      question_count: exam.questions?.length || 0,
-      questions: undefined,
+      question_count: questionCountByExamId.get(exam.id) || 0,
     }));
 
     return NextResponse.json({ exams: examsWithQuestionCount }, { status: 200 });
